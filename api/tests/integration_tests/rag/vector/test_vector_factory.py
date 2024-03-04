@@ -74,7 +74,6 @@ def test_invoke_model(setup_google_mock):
 @pytest.mark.parametrize('setup_google_mock', [['none']], indirect=True)
 def test_invoke_stream_model(setup_google_mock):
     model = GoogleLargeLanguageModel()
-
     response = model.invoke(
         model='gemini-pro',
         credentials={

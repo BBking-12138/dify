@@ -277,7 +277,7 @@ class QdrantVector(BaseVector):
         from qdrant_client.http import models
         filter = models.Filter(
             must=[
-                models.FieldCondition(
+                models.FieldCondition( 
                     key="group_id",
                     match=models.MatchValue(value=self._group_id),
                 ),
