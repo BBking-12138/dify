@@ -27,18 +27,18 @@ def mock_milvus(monkeypatch: MonkeyPatch, methods: List[Literal["get_collections
 
     if "connect" in methods:
         monkeypatch.setattr(Connections, "connect", MockMilvusClass.delete())
-    if "get_collections" in methods:
-        monkeypatch.setattr(utility, "has_collection", MockMilvusClass.get_collections())
+    if "has_collection" in methods:
+        monkeypatch.setattr(utility, "has_collection", MockMilvusClass.has_collection())
     if "insert" in methods:
         monkeypatch.setattr(MilvusClient, "insert", MockMilvusClass.insert())
-    if "create_payload_index" in methods:
-        monkeypatch.setattr(QdrantClient, "create_payload_index", MockMilvusClass.create_payload_index())
-    if "upsert" in methods:
-        monkeypatch.setattr(QdrantClient, "upsert", MockMilvusClass.upsert())
-    if "scroll" in methods:
-        monkeypatch.setattr(QdrantClient, "scroll", MockMilvusClass.scroll())
+    if "query" in methods:
+        monkeypatch.setattr(MilvusClient, "query", MockMilvusClass.query())
+    if "delete" in methods:
+        monkeypatch.setattr(MilvusClient, "delete", MockMilvusClass.delete())
     if "search" in methods:
-        monkeypatch.setattr(QdrantClient, "search", MockMilvusClass.search())
+        monkeypatch.setattr(MilvusClient, "search", MockMilvusClass.search())
+    if "create_collection_with_schema" in methods:
+        monkeypatch.setattr(MilvusClient, "create_collection_with_schema", MockMilvusClass.create_collection_with_schema())
 
     return unpatch
 

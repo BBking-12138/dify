@@ -1,73 +1,64 @@
 from ctypes import Union
-from typing import List, Optional, Tuple
-from qdrant_client.conversions import common_types as types
+from typing import List
 
 
 class MockMilvusClass(object):
 
     @staticmethod
-    def get_collections() -> types.CollectionsResponse:
-        collections_response = types.CollectionsResponse(
-            collections=["test"]
-        )
-        return collections_response
-
-    @staticmethod
-    def recreate_collection() -> bool:
-        return True
-
-    @staticmethod
-    def create_payload_index() -> types.UpdateResult:
-        update_result = types.UpdateResult(
-            updated=1
-        )
-        return update_result
-
-    @staticmethod
-    def upsert() -> types.UpdateResult:
-        update_result = types.UpdateResult(
-            updated=1
-        )
-        return update_result
-
-    @staticmethod
     def insert() -> List[Union[str, int]]:
-        result = ['d48632d7-c972-484a-8ed9-262490919c79']
+        result = [447829498067199697]
         return result
 
     @staticmethod
     def delete() -> List[Union[str, int]]:
-        result = ['d48632d7-c972-484a-8ed9-262490919c79']
+        result = [447829498067199697]
         return result
 
     @staticmethod
-    def scroll() -> Tuple[List[types.Record], Optional[types.PointId]]:
-
-        record = types.Record(
-            id='d48632d7-c972-484a-8ed9-262490919c79',
-            payload={'group_id': '06798db6-1f99-489a-b599-dd386a043f2d',
-                     'metadata': {'dataset_id': '06798db6-1f99-489a-b599-dd386a043f2d',
-                                  'doc_hash': '85197672a2c2b05d2c8690cb7f1eedc78fe5f0ca7b8ae8a301f64eb8d959b436',
-                                  'doc_id': 'd48632d7-c972-484a-8ed9-262490919c79',
-                                  'document_id': '1518a57d-9049-426e-99ae-5a6d479175c0'},
-                     'page_content': 'Dify is a company that provides a platform for the development of AI models.'},
-            vector=[0.23333 for _ in range(233)]
-        )
-        return [record], 'd48632d7-c972-484a-8ed9-262490919c79'
+    def search() -> List[dict]:
+        result = [
+            {
+                'id': 447829498067199697,
+                'distance': 0.8776655793190002,
+                'entity': {
+                    'page_content': 'Dify is a company that provides a platform for the development of AI models.',
+                    'metadata':
+                        {
+                            'doc_id': '327d1cb8-15ce-4934-bede-936a13c19ace',
+                            'doc_hash': '7ee3cf010e606bb768c3bca7b1397ff651fd008ef10e56a646c537d2c8afb319',
+                            'document_id': '6c4619dd-2169-4879-b05a-b8937c98c80c',
+                            'dataset_id': 'a2f4f4eb-75eb-4432-8c5f-788100533454'
+                        }
+                }
+            }
+        ]
+        return result
 
     @staticmethod
-    def search() -> List[types.ScoredPoint]:
-        result = types.ScoredPoint(
-            id='d48632d7-c972-484a-8ed9-262490919c79',
-            payload={'group_id': '06798db6-1f99-489a-b599-dd386a043f2d',
-                     'metadata': {'dataset_id': '06798db6-1f99-489a-b599-dd386a043f2d',
-                                  'doc_hash': '85197672a2c2b05d2c8690cb7f1eedc78fe5f0ca7b8ae8a301f64eb8d959b436',
-                                  'doc_id': 'd48632d7-c972-484a-8ed9-262490919c79',
-                                  'document_id': '1518a57d-9049-426e-99ae-5a6d479175c0'},
-                     'page_content': 'Dify is a company that provides a platform for the development of AI models.'},
-            vision=999,
-            vector=[0.23333 for _ in range(233)],
-            score=0.99
-        )
-        return [result]
+    def query() -> List[dict]:
+        result = [
+            {
+                'id': 447829498067199697,
+                'distance': 0.8776655793190002,
+                'entity': {
+                    'page_content': 'Dify is a company that provides a platform for the development of AI models.',
+                    'metadata':
+                        {
+                            'doc_id': '327d1cb8-15ce-4934-bede-936a13c19ace',
+                            'doc_hash': '7ee3cf010e606bb768c3bca7b1397ff651fd008ef10e56a646c537d2c8afb319',
+                            'document_id': '6c4619dd-2169-4879-b05a-b8937c98c80c',
+                            'dataset_id': 'a2f4f4eb-75eb-4432-8c5f-788100533454'
+                        }
+                }
+            }
+        ]
+        return result
+
+    @staticmethod
+    def create_collection_with_schema():
+        pass
+
+    @staticmethod
+    def has_collection() -> bool:
+        return True
 
