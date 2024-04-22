@@ -1,6 +1,9 @@
+import logging
 import threading
+import time
 from typing import Optional
 
+import click
 from flask import Flask, current_app
 
 from core.rag.data_post_processor.data_post_processor import DataPostProcessor
@@ -110,6 +113,7 @@ class RetrievalService:
                          top_k: int, score_threshold: Optional[float], reranking_model: Optional[dict],
                          all_documents: list, retrival_method: str):
         with flask_app.app_context():
+            start_at = time.perf_counter()
             dataset = db.session.query(Dataset).filter(
                 Dataset.id == dataset_id
             ).first()
@@ -139,12 +143,17 @@ class RetrievalService:
                     ))
                 else:
                     all_documents.extend(documents)
+            end_at = time.perf_counter()
+            logging.info(
+                click.style('Processed embedding_search latency: {}'.format(end_at - start_at), fg='green'))
 
     @classmethod
     def full_text_index_search(cls, flask_app: Flask, dataset_id: str, query: str,
                                top_k: int, score_threshold: Optional[float], reranking_model: Optional[dict],
                                all_documents: list, retrival_method: str):
         with flask_app.app_context():
+            start_at = time.perf_counter()
+
             dataset = db.session.query(Dataset).filter(
                 Dataset.id == dataset_id
             ).first()
@@ -168,3 +177,7 @@ class RetrievalService:
                     ))
                 else:
                     all_documents.extend(documents)
+            end_at = time.perf_counter()
+            logging.info(
+                click.style('Processed full_text_index_search latency: {}'.format(end_at - start_at), fg='green'))
+
