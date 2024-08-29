@@ -10,3 +10,4 @@ pytest api/tests/integration_tests/vdb/chroma \
   api/tests/integration_tests/vdb/elasticsearch \
   api/tests/integration_tests/vdb/couchbase \
   api/tests/integration_tests/vdb/test_vector_store.py
+

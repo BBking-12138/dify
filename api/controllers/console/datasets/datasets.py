@@ -630,9 +630,6 @@ class DatasetRetrievalSettingApi(Resource):
                 | VectorType.PGVECTOR
             ):
                 return {
-<<<<<<< HEAD
-                    "retrieval_method": [
-=======
                     'retrieval_method': [
                         RetrievalMethod.SEMANTIC_SEARCH.value
                     ]
@@ -640,7 +637,6 @@ class DatasetRetrievalSettingApi(Resource):
             case VectorType.QDRANT | VectorType.WEAVIATE | VectorType.OPENSEARCH | VectorType.ANALYTICDB | VectorType.MYSCALE | VectorType.ORACLE | VectorType.COUCHBASE:
                 return {
                     'retrieval_method': [
->>>>>>> f2c24173 (resolve conflicts)
                         RetrievalMethod.SEMANTIC_SEARCH.value,
                         RetrievalMethod.FULL_TEXT_SEARCH.value,
                         RetrievalMethod.HYBRID_SEARCH.value,
@@ -676,9 +672,6 @@ class DatasetRetrievalSettingMockApi(Resource):
                 | VectorType.PGVECTOR
             ):
                 return {
-<<<<<<< HEAD
-                    "retrieval_method": [
-=======
                     'retrieval_method': [
                         RetrievalMethod.SEMANTIC_SEARCH.value
                     ]
@@ -686,7 +679,6 @@ class DatasetRetrievalSettingMockApi(Resource):
             case VectorType.QDRANT | VectorType.WEAVIATE | VectorType.OPENSEARCH| VectorType.ANALYTICDB | VectorType.MYSCALE | VectorType.ORACLE | VectorType.COUCHBASE:
                 return {
                     'retrieval_method': [
->>>>>>> f2c24173 (resolve conflicts)
                         RetrievalMethod.SEMANTIC_SEARCH.value,
                         RetrievalMethod.FULL_TEXT_SEARCH.value,
                         RetrievalMethod.HYBRID_SEARCH.value,

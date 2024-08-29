@@ -339,15 +339,20 @@ def migrate_knowledge_vector_database():
                     collection_name = Dataset.gen_collection_name_by_id(dataset_id)
                     index_struct_dict = {
                         "type": VectorType.ANALYTICDB,
-                        "vector_store": {"class_prefix": collection_name}
+                        "vector_store": {"class_prefix": collection_name},
                     }
+                    dataset.index_struct = json.dumps(index_struct_dict)
+                elif vector_type == VectorType.ELASTICSEARCH:
+                    dataset_id = dataset.id
+                    index_name = Dataset.gen_collection_name_by_id(dataset_id)
+                    index_struct_dict = {"type": "elasticsearch", "vector_store": {"class_prefix": index_name}}
                     dataset.index_struct = json.dumps(index_struct_dict)
                 elif vector_type == VectorType.COUCHBASE:
                     dataset_id = dataset.id
                     collection_name = Dataset.gen_collection_name_by_id(dataset_id)
                     index_struct_dict = {
                         "type": VectorType.COUCHBASE,
-                        "vector_store": {"class_prefix": collection_name}
+                        "vector_store": {"class_prefix": collection_name},
                     }
                     dataset.index_struct = json.dumps(index_struct_dict)
                 elif vector_type == VectorType.ELASTICSEARCH:
@@ -564,6 +569,8 @@ def add_qdrant_doc_id_index(field: str):
 @click.option("--name", prompt=True, help="Workspace name.")
 @click.option("--language", prompt=True, help="Account language, default: en-US.")
 def create_tenant(email: str, language: Optional[str] = None, name: Optional[str] = None):
+@click.option("--language", prompt=True, help="Account language, default: en-US.")
+def create_tenant(email: str, language: Optional[str] = None):
     """
     Create tenant account
     """
