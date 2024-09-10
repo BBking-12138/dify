@@ -24,7 +24,7 @@ const PanelContextmenu = () => {
   const clipboardElements = useStore(s => s.clipboardElements)
   const setShowImportDSLModal = useStore(s => s.setShowImportDSLModal)
   const { handleNodesPaste } = useNodesInteractions()
-  const { handlePaneContextmenuCancel, handleNodeContextmenuCancel } = usePanelInteractions()
+  const { handlePanelContextmenuCancel, handleNodeContextmenuCancel } = usePanelInteractions()
   const { handleStartWorkflowRun } = useWorkflowStartRun()
   const { handleAddNote } = useOperator()
   const { exportCheck } = useDSL()
@@ -35,7 +35,7 @@ const PanelContextmenu = () => {
   }, [panelMenu, handleNodeContextmenuCancel])
 
   useClickAway(() => {
-    handlePaneContextmenuCancel()
+    handlePanelContextmenuCancel()
   }, ref)
 
   const renderTrigger = () => {
@@ -44,6 +44,7 @@ const PanelContextmenu = () => {
         className='flex items-center justify-between px-3 h-8 text-sm text-gray-700 rounded-lg cursor-pointer hover:bg-gray-50'
       >
         {t('workflow.common.addBlock')}
+        <ShortcutsName keys={['shift', 'a']} />
       </div>
     )
   }
@@ -67,13 +68,14 @@ const PanelContextmenu = () => {
             mainAxis: -36,
             crossAxis: -4,
           }}
+          useShortcut={false}
         />
         <div
           className='flex items-center justify-between px-3 h-8 text-sm text-gray-700 rounded-lg cursor-pointer hover:bg-gray-50'
           onClick={(e) => {
             e.stopPropagation()
             handleAddNote()
-            handlePaneContextmenuCancel()
+            handlePanelContextmenuCancel()
           }}
         >
           {t('workflow.nodes.note.addNote')}
@@ -82,7 +84,7 @@ const PanelContextmenu = () => {
           className='flex items-center justify-between px-3 h-8 text-sm text-gray-700 rounded-lg cursor-pointer hover:bg-gray-50'
           onClick={() => {
             handleStartWorkflowRun()
-            handlePaneContextmenuCancel()
+            handlePanelContextmenuCancel()
           }}
         >
           {t('workflow.common.run')}
@@ -99,7 +101,7 @@ const PanelContextmenu = () => {
           onClick={() => {
             if (clipboardElements.length) {
               handleNodesPaste()
-              handlePaneContextmenuCancel()
+              handlePanelContextmenuCancel()
             }
           }}
         >
