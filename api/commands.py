@@ -569,8 +569,6 @@ def add_qdrant_doc_id_index(field: str):
 @click.option("--name", prompt=True, help="Workspace name.")
 @click.option("--language", prompt=True, help="Account language, default: en-US.")
 def create_tenant(email: str, language: Optional[str] = None, name: Optional[str] = None):
-@click.option("--language", prompt=True, help="Account language, default: en-US.")
-def create_tenant(email: str, language: Optional[str] = None):
     """
     Create tenant account
     """
