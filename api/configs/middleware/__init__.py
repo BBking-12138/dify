@@ -225,6 +225,6 @@ class MiddlewareConfig(
     TiDBVectorConfig,
     WeaviateConfig,
     ElasticsearchConfig,
-    CouchbaseConfig
+    CouchbaseConfig,
 ):
     pass
