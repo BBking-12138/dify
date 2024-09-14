@@ -198,6 +198,7 @@ const Chat: FC<ChatProps> = ({
         >
           {chatNode}
           <div
+            id="dify-chat-screenshot"
             ref={chatContainerInnerRef}
             className={classNames('w-full', !noSpacing && 'px-8', chatContainerInnerClassName)}
           >
