@@ -129,9 +129,8 @@ const Header: FC = () => {
     workflowStore.setState({ isRestoring: true })
     handleBackupDraft()
     // clear right panel
-    if (selectedNode) {
+    if (selectedNode)
       handleNodeSelect(selectedNode.id, true)
-    }
   }, [handleBackupDraft, workflowStore, handleNodeSelect, selectedNode])
 
   const onPublisherToggle = useCallback((state: boolean) => {
