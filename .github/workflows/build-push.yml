@@ -5,6 +5,7 @@ on:
     branches:
       - "main"
       - "deploy/dev"
+      - "test/new-login-testing"
   release:
     types: [published]
 
