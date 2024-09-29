@@ -1,9 +1,9 @@
 import enum
 import json
 
-from flask_login import UserMixin
-
 from extensions.ext_database import db
+from flask_login import UserMixin
+from sqlalchemy import Enum
 
 from .types import StringUUID
 
@@ -259,3 +259,27 @@ class InvitationCode(db.Model):
     used_by_account_id = db.Column(StringUUID)
     deprecated_at = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, nullable=False, server_default=db.text("CURRENT_TIMESTAMP(0)"))
+
+
+class AccountDeletionLogStatus(str, enum.Enum):
+    PENDING = "pending"
+    FAILED = "failed"
+    COMPLETED = "completed"
+
+
+class AccountDeletionLog(db.Model):
+    __tablename__ = "account_deletion_logs"
+    __table_args__ = (
+        db.PrimaryKeyConstraint("id", name="account_deletion_log_pkey"),
+        db.Index("account_deletion_logs_account_id_idx", "account_id"),
+        db.Index("account_deletion_logs_status_idx", "status"),
+    )
+
+    id = db.Column(StringUUID, server_default=db.text("uuid_generate_v4()"))
+    account_id = db.Column(StringUUID, nullable=False)
+    status = db.Column(Enum(AccountDeletionLogStatus), nullable=False, default=AccountDeletionLogStatus.PENDING)
+    reason = db.Column(db.Text)
+    email = db.Column(db.String(255), nullable=False)
+
+    created_at = db.Column(db.DateTime, nullable=False, server_default=db.text("CURRENT_TIMESTAMP(0)"))
+    updated_at = db.Column(db.DateTime, nullable=False, server_default=db.text("CURRENT_TIMESTAMP(0)"))

@@ -6,9 +6,6 @@ from datetime import datetime, timedelta, timezone
 from hashlib import sha256
 from typing import Any, Optional
 
-from sqlalchemy import func
-from werkzeug.exceptions import Unauthorized
-
 from configs import dify_config
 from constants.languages import language_timezone_mapping, languages
 from events.tenant_event import tenant_was_created
@@ -19,23 +16,24 @@ from libs.password import compare_password, hash_password, valid_password
 from libs.rsa import generate_key_pair
 from models.account import *
 from models.model import DifySetup
-from services.errors.account import (
-    AccountAlreadyInTenantError,
-    AccountLoginError,
-    AccountNotLinkTenantError,
-    AccountRegisterError,
-    CannotOperateSelfError,
-    CurrentPasswordIncorrectError,
-    InvalidActionError,
-    LinkAccountIntegrateError,
-    MemberNotInTenantError,
-    NoPermissionError,
-    RateLimitExceededError,
-    RoleAlreadyAssignedError,
-    TenantNotFoundError,
-)
+from services.errors.account import (AccountAlreadyInTenantError,
+                                     AccountLoginError,
+                                     AccountNotLinkTenantError,
+                                     AccountRegisterError,
+                                     CannotOperateSelfError,
+                                     CurrentPasswordIncorrectError,
+                                     InvalidActionError,
+                                     LinkAccountIntegrateError,
+                                     MemberNotInTenantError, NoPermissionError,
+                                     RateLimitExceededError,
+                                     RoleAlreadyAssignedError,
+                                     TenantNotFoundError)
+from sqlalchemy import func
 from tasks.mail_invite_member_task import send_invite_member_mail_task
 from tasks.mail_reset_password_task import send_reset_password_mail_task
+from werkzeug.exceptions import Unauthorized
+
+from api.tasks import mail_account_deletion_verify_task
 
 
 class AccountService:
@@ -157,6 +155,20 @@ class AccountService:
         return account
 
     @staticmethod
+    def delete_account(account: Account, reason: str) -> None:
+        """Delete account. Actual deletion is done by the background scheduler."""
+        logging.info(f"Start deletion of account {account.id}.")
+
+        # add deletion log, set status to pending
+        account_deletion_log = AccountDeletionLog(
+            account_id=account.id,
+            status=AccountDeletionLogStatus.PENDING,
+            reason=reason
+        )
+        db.session.add(account_deletion_log)
+        db.session.commit()
+
+    @staticmethod
     def link_account_integrate(provider: str, open_id: str, account: Account) -> None:
         """Link account integrate"""
         try:
@@ -245,6 +257,11 @@ class AccountService:
     @classmethod
     def get_reset_password_data(cls, token: str) -> Optional[dict[str, Any]]:
         return TokenManager.get_token_data(token, "reset_password")
+
+    @classmethod
+    def send_account_delete_verification_email(cls, account: Account, code: str):
+        language, email = account.interface_language, account.email
+        mail_account_deletion_verify_task.delay(language=language, to=email, code=code)
 
 
 def _get_login_cache_key(*, account_id: str, token: str):

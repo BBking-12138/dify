@@ -53,6 +53,7 @@ def init_app(app: Flask) -> Celery:
     imports = [
         "schedule.clean_embedding_cache_task",
         "schedule.clean_unused_datasets_task",
+        "schedule.delete_account_task",
     ]
     day = app.config.get("CELERY_BEAT_SCHEDULER_TIME")
     beat_schedule = {
@@ -63,6 +64,10 @@ def init_app(app: Flask) -> Celery:
         "clean_unused_datasets_task": {
             "task": "schedule.clean_unused_datasets_task.clean_unused_datasets_task",
             "schedule": timedelta(days=day),
+        },
+        "delete_account_task": {
+            "task": "schedule.delete_account_task.delete_account_task",
+            "schedule": timedelta(hours='*/1'),  # pull every 1 hour
         },
     }
     celery_app.conf.update(beat_schedule=beat_schedule, imports=imports)
