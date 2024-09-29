@@ -30,8 +30,11 @@ const ChangePasswordForm = () => {
   }, [])
 
   const getSignInUrl = () => {
-    if (searchParams.has('invite_token'))
-      return `/signin/invite-settings?${searchParams.toString()}`
+    if (searchParams.has('invite_token')) {
+      const params = new URLSearchParams()
+      params.set('token', searchParams.get('invite_token') as string)
+      return `/activate?${params.toString()}`
+    }
     return '/signin'
   }
 
