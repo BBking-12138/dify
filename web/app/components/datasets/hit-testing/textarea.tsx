@@ -144,6 +144,7 @@ const TextAreaWithButton = ({
                 onSave={handleSaveExternalRetrievalSettings}
                 initialTopK={externalRetrievalSettings.top_k}
                 initialScoreThreshold={externalRetrievalSettings.score_threshold}
+                initialScoreThresholdEnabled={externalRetrievalSettings.score_threshold_enabled}
               />
             )
           }
