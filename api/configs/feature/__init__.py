@@ -599,9 +599,9 @@ class PositionConfig(BaseSettings):
 
 
 class VerificationConfig(BaseSettings):
-    VERIFICATION_CODE_EXPIRY: PositiveInt = Field(
-        description="Duration in seconds for which a verification code remains valid",
-        default=300,
+    VERIFICATION_CODE_EXPIRY_MINUTES: PositiveInt = Field(
+        description="Duration in minutes for which a verification code remains valid",
+        default=5,
     )
 
     VERIFICATION_CODE_LENGTH: PositiveInt = Field(
@@ -609,9 +609,9 @@ class VerificationConfig(BaseSettings):
         default=6,
     )
 
-    VERIFICATION_CODE_COOLDOWN: PositiveInt = Field(
-        description="Cooldown time in seconds between verification code generation",
-        default=60,
+    VERIFICATION_CODE_COOLDOWN_MINUTES: PositiveInt = Field(
+        description="Cooldown time in minutes between verification code generation",
+        default=1,
     )
 
 

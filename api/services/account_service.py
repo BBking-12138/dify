@@ -10,7 +10,7 @@ from configs import dify_config
 from constants.languages import language_timezone_mapping, languages
 from events.tenant_event import tenant_was_created
 from extensions.ext_redis import redis_client
-from libs.helper import RateLimiter, TokenManager
+from libs.helper import RateLimiter, TokenManager, get_current_datetime
 from libs.passport import PassportService
 from libs.password import compare_password, hash_password, valid_password
 from libs.rsa import generate_key_pair
@@ -155,7 +155,18 @@ class AccountService:
         return account
 
     @staticmethod
-    def delete_account(account: Account, reason: str) -> None:
+    def update_deletion_reason(account: Account, reason: str) -> None:
+        """Update deletion log reason"""
+        account_deletion_log = AccountDeletionLog.query.filter_by(account_id=account.id).first()
+        if not account_deletion_log:
+            raise Exception("Account deletion log not found.")
+
+        account_deletion_log.reason = reason
+        account_deletion_log.updated_at = get_current_datetime()
+        db.session.commit()
+
+    @staticmethod
+    def delete_account(account: Account) -> None:
         """Delete account. Actual deletion is done by the background scheduler."""
         logging.info(f"Start deletion of account {account.id}.")
 
@@ -163,7 +174,6 @@ class AccountService:
         account_deletion_log = AccountDeletionLog(
             account_id=account.id,
             status=AccountDeletionLogStatus.PENDING,
-            reason=reason
         )
         db.session.add(account_deletion_log)
         db.session.commit()

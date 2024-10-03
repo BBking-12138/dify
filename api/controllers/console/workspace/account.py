@@ -248,16 +248,19 @@ class AccountDeleteVerifyApi(Resource):
     @setup_required
     @login_required
     @account_initialization_required
-    def get(self):
+    def post(self):
         account = current_user
 
         try:
-            code = VerificationService.generate_account_deletion_verification_code(account.email)
+            code = VerificationService.generate_account_deletion_verification_code(account)
             AccountService.send_account_delete_verification_email(account, code)
         except RateLimitExceededError:
             return {"result": "fail", "error": "Rate limit exceeded."}, 429
 
         return {"result": "success"}
+
+
+class AccountDeleteApi(Resource):
 
     @setup_required
     @login_required
@@ -267,13 +270,29 @@ class AccountDeleteVerifyApi(Resource):
 
         parser = reqparse.RequestParser()
         parser.add_argument("code", type=str, required=True, location="json")
+        args = parser.parse_args()
+
+        if not VerificationService.verify_account_deletion_verification_code(account, args["code"]):
+            return {"result": "fail", "error": "Verification code is invalid."}, 400
+
+        AccountService.delete_account(account)
+
+        return {"result": "success"}
+
+    @setup_required
+    @login_required
+    @account_initialization_required
+    def patch(self):
+        account = current_user
+
+        parser = reqparse.RequestParser()
         parser.add_argument("reason", type=str, required=True, location="json")
         args = parser.parse_args()
 
-        if not VerificationService.verify_account_deletion_verification_code(account.email, args["code"]):
-            return {"result": "fail", "error": "Verification code is invalid."}, 400
-
-        AccountService.delete_account(account, args["reason"], args["code"])
+        try:
+            AccountService.update_deletion_reason(account, args["reason"])
+        except ValueError as e:
+            return {"result": "fail", "error": str(e)}, 400
 
         return {"result": "success"}
 
@@ -288,6 +307,7 @@ api.add_resource(AccountInterfaceThemeApi, "/account/interface-theme")
 api.add_resource(AccountTimezoneApi, "/account/timezone")
 api.add_resource(AccountPasswordApi, "/account/password")
 api.add_resource(AccountIntegrateApi, "/account/integrates")
-api.add_resource(AccountDeleteVerifyApi, "/account/delete-verify")
+api.add_resource(AccountDeleteVerifyApi, "/account/delete/verify")
+api.add_resource(AccountDeleteApi, "/account/delete")
 # api.add_resource(AccountEmailApi, '/account/email')
 # api.add_resource(AccountEmailVerifyApi, '/account/email-verify')

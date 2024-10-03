@@ -278,7 +278,7 @@ class AccountDeletionLog(db.Model):
     id = db.Column(StringUUID, server_default=db.text("uuid_generate_v4()"))
     account_id = db.Column(StringUUID, nullable=False)
     status = db.Column(Enum(AccountDeletionLogStatus), nullable=False, default=AccountDeletionLogStatus.PENDING)
-    reason = db.Column(db.Text)
+    reason = db.Column(db.Text, nullable=True)
     email = db.Column(db.String(255), nullable=False)
 
     created_at = db.Column(db.DateTime, nullable=False, server_default=db.text("CURRENT_TIMESTAMP(0)"))
