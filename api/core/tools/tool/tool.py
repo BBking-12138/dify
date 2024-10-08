@@ -62,7 +62,7 @@ class Tool(BaseModel, ABC):
     def __init__(self, **data: Any):
         super().__init__(**data)
 
-    class VariableKey(Enum):
+    class VariableKey(str, Enum):
         IMAGE = "image"
 
     def fork_tool_runtime(self, runtime: dict[str, Any]) -> "Tool":
