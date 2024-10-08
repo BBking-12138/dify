@@ -10,11 +10,11 @@ import PermissionSelector from '../permission-selector'
 import IndexMethodRadio from '../index-method-radio'
 import RetrievalSettings from '../../external-knowledge-base/create/RetrievalSettings'
 import RetrievalMethodConfig from '@/app/components/datasets/common/retrieval-method-config'
-import Input from '@/app/components/base/input'
-import Textarea from '@/app/components/base/textarea'
 import EconomicalRetrievalMethodConfig from '@/app/components/datasets/common/economical-retrieval-method-config'
 import { ToastContext } from '@/app/components/base/toast'
 import Button from '@/app/components/base/button'
+import Input from '@/app/components/base/input'
+import Textarea from '@/app/components/base/textarea'
 import Divider from '@/app/components/base/divider'
 import { ApiConnectionMod } from '@/app/components/base/icons/src/vender/solid/development'
 import { updateDatasetSetting } from '@/service/datasets'
@@ -262,7 +262,7 @@ const Form = () => {
       {/* Retrieval Method Config */}
       {currentDataset?.provider === 'external'
         ? <>
-          <div className={rowClass}><Divider/></div>
+          <div className={rowClass}><Divider /></div>
           <div className={rowClass}>
             <div className={labelClass}>
               <div className='text-text-secondary system-sm-semibold'>{t('datasetSettings.form.retrievalSetting.title')}</div>
@@ -275,7 +275,7 @@ const Form = () => {
               isInRetrievalSetting={true}
             />
           </div>
-          <div className={rowClass}><Divider/></div>
+          <div className={rowClass}><Divider /></div>
           <div className={rowClass}>
             <div className={labelClass}>
               <div className='text-text-secondary system-sm-semibold'>{t('datasetSettings.form.externalKnowledgeAPI')}</div>
@@ -301,7 +301,7 @@ const Form = () => {
               </div>
             </div>
           </div>
-          <div className={rowClass}><Divider/></div>
+          <div className={rowClass}><Divider /></div>
         </>
         : <div className={rowClass}>
           <div className={labelClass}>
@@ -342,7 +342,7 @@ const Form = () => {
           </Button>
         </div>
       </div>
-    </div>
+    </div >
   )
 }
 

@@ -15,11 +15,9 @@ from core.helper import ssrf_proxy
 from extensions.ext_database import db
 from models.dataset import (
     Dataset,
-    Document,
     ExternalKnowledgeApis,
     ExternalKnowledgeBindings,
 )
-from models.model import UploadFile
 from services.entities.external_knowledge_entities.external_knowledge_entities import (
     Authorization,
     ExternalKnowledgeApiSetting,
@@ -34,9 +32,11 @@ class ExternalDatasetService:
             ExternalKnowledgeApis.created_at.desc()
         )
         if search:
-            query = query.filter(ExternalKnowledgeApis.name.ilike(f"%{search}%"))
+            query = query.filter(
+                ExternalKnowledgeApis.name.ilike(f"%{search}%"))
 
-        external_knowledge_apis = query.paginate(page=page, per_page=per_page, max_per_page=100, error_out=False)
+        external_knowledge_apis = query.paginate(
+            page=page, per_page=per_page, max_per_page=100, error_out=False)
 
         return external_knowledge_apis.items, external_knowledge_apis.total
 
@@ -77,15 +77,19 @@ class ExternalDatasetService:
         if not validators.url(endpoint):
             raise ValueError(f"invalid endpoint: {endpoint}")
         try:
-            response = httpx.post(endpoint, headers={"Authorization": f"Bearer {api_key}"})
+            response = httpx.post(
+                endpoint, headers={"Authorization": f"Bearer {api_key}"})
         except Exception as e:
             raise ValueError(f"failed to connect to the endpoint: {endpoint}")
         if response.status_code == 502:
-            raise ValueError(f"Bad Gateway: failed to connect to the endpoint: {endpoint}")
+            raise ValueError(
+                f"Bad Gateway: failed to connect to the endpoint: {endpoint}")
         if response.status_code == 404:
-            raise ValueError(f"Not Found: failed to connect to the endpoint: {endpoint}")
+            raise ValueError(
+                f"Not Found: failed to connect to the endpoint: {endpoint}")
         if response.status_code == 403:
-            raise ValueError(f"Forbidden: Authorization failed with api_key: {api_key}")
+            raise ValueError(
+                f"Forbidden: Authorization failed with api_key: {api_key}")
 
     @staticmethod
     def get_external_knowledge_api(external_knowledge_api_id: str) -> ExternalKnowledgeApis:
@@ -101,9 +105,11 @@ class ExternalDatasetService:
 
         external_knowledge_api.name = args.get("name")
         external_knowledge_api.description = args.get("description", "")
-        external_knowledge_api.settings = json.dumps(args.get("settings"), ensure_ascii=False)
+        external_knowledge_api.settings = json.dumps(
+            args.get("settings"), ensure_ascii=False)
         external_knowledge_api.updated_by = user_id
-        external_knowledge_api.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
+        external_knowledge_api.updated_at = datetime.now(
+            timezone.utc).replace(tzinfo=None)
         db.session.commit()
 
         return external_knowledge_api
@@ -121,7 +127,8 @@ class ExternalDatasetService:
 
     @staticmethod
     def external_knowledge_api_use_check(external_knowledge_api_id: str) -> tuple[bool, int]:
-        count = ExternalKnowledgeBindings.query.filter_by(external_knowledge_api_id=external_knowledge_api_id).count()
+        count = ExternalKnowledgeBindings.query.filter_by(
+            external_knowledge_api_id=external_knowledge_api_id).count()
         if count > 0:
             return True, count
         return False, 0
@@ -148,7 +155,8 @@ class ExternalDatasetService:
             if custom_parameters:
                 for parameter in custom_parameters:
                     if parameter.get("required", False) and not process_parameter.get(parameter.get("name")):
-                        raise ValueError(f'{parameter.get("name")} is required')
+                        raise ValueError(
+                            f'{parameter.get("name")} is required')
 
     @staticmethod
     def init_external_dataset(tenant_id: str, user_id: str, args: dict, created_from: str = "web"):
@@ -176,11 +184,13 @@ class ExternalDatasetService:
         db.session.add(dataset)
         db.session.flush()
 
-        document = Document.query.filter_by(dataset_id=dataset.id).order_by(Document.position.desc()).first()
+        document = Document.query.filter_by(dataset_id=dataset.id).order_by(
+            Document.position.desc()).first()
 
         position = document.position + 1 if document else 1
 
-        batch = time.strftime("%Y%m%d%H%M%S") + str(random.randint(100000, 999999))
+        batch = time.strftime("%Y%m%d%H%M%S") + \
+            str(random.randint(100000, 999999))
         document_ids = []
         if data_source["type"] == "upload_file":
             upload_file_list = data_source["info_list"]["file_info_list"]["file_ids"]
@@ -228,7 +238,8 @@ class ExternalDatasetService:
             "follow_redirects": True,
         }
 
-        response = getattr(ssrf_proxy, settings.request_method)(data=json.dumps(settings.params), files=files, **kwargs)
+        response = getattr(ssrf_proxy, settings.request_method)(
+            data=json.dumps(settings.params), files=files, **kwargs)
 
         return response
 
@@ -266,7 +277,8 @@ class ExternalDatasetService:
     def create_external_dataset(tenant_id: str, user_id: str, args: dict) -> Dataset:
         # check if dataset name already exists
         if Dataset.query.filter_by(name=args.get("name"), tenant_id=tenant_id).first():
-            raise DatasetNameDuplicateError(f"Dataset with name {args.get('name')} already exists.")
+            raise DatasetNameDuplicateError(
+                f"Dataset with name {args.get('name')} already exists.")
         external_knowledge_api = ExternalKnowledgeApis.query.filter_by(
             id=args.get("external_knowledge_api_id"), tenant_id=tenant_id
         ).first()
@@ -319,8 +331,10 @@ class ExternalDatasetService:
         headers = {"Content-Type": "application/json"}
         if settings.get("api_key"):
             headers["Authorization"] = f"Bearer {settings.get('api_key')}"
-        score_threshold_enabled = external_retrieval_parameters.get("score_threshold_enabled") or False
-        score_threshold = external_retrieval_parameters.get("score_threshold", 0.0) if score_threshold_enabled else 0.0
+        score_threshold_enabled = external_retrieval_parameters.get(
+            "score_threshold_enabled") or False
+        score_threshold = external_retrieval_parameters.get(
+            "score_threshold", 0.0) if score_threshold_enabled else 0.0
         request_params = {
             "retrieval_setting": {
                 "top_k": external_retrieval_parameters.get("top_k"),

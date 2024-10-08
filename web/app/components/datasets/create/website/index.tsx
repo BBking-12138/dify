@@ -78,10 +78,9 @@ const Website: FC<Props> = ({
         </div>
         <div className="flex space-x-2">
           <button
-            className={`px-4 py-2 text-sm font-medium rounded-md flex items-center justify-center ${
-              selectedProvider === DataSourceProvider.jinaReader
-                ? 'bg-primary-50 text-primary-600'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            className={`px-4 py-2 text-sm font-medium rounded-md flex items-center justify-center ${selectedProvider === DataSourceProvider.jinaReader
+              ? 'bg-primary-50 text-primary-600'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
             onClick={() => setSelectedProvider(DataSourceProvider.jinaReader)}
           >
@@ -89,10 +88,9 @@ const Website: FC<Props> = ({
             <span>Jina Reader</span>
           </button>
           <button
-            className={`px-4 py-2 text-sm font-medium rounded-md ${
-              selectedProvider === DataSourceProvider.fireCrawl
-                ? 'bg-primary-50 text-primary-600'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            className={`px-4 py-2 text-sm font-medium rounded-md ${selectedProvider === DataSourceProvider.fireCrawl
+              ? 'bg-primary-50 text-primary-600'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
             onClick={() => setSelectedProvider(DataSourceProvider.fireCrawl)}
           >
@@ -101,31 +99,36 @@ const Website: FC<Props> = ({
         </div>
       </div>
 
-      {selectedProvider === DataSourceProvider.fireCrawl
-        ? sources.find(source => source.provider === DataSourceProvider.fireCrawl) ? (
-          <Firecrawl
-              onPreview={onPreview}
-              checkedCrawlResult={checkedCrawlResult}
-              onCheckedCrawlResultChange={onCheckedCrawlResultChange}
-              onJobIdChange={onJobIdChange}
-              crawlOptions={crawlOptions}
-              onCrawlOptionsChange={onCrawlOptionsChange}
-            />
-          ) : (
-            <NoData onConfig={handleOnConfig} provider={selectedProvider} />
-          )
-        : sources.find(source => source.provider === DataSourceProvider.jinaReader) ? (
-          <JinaReader
-              onPreview={onPreview}
-              checkedCrawlResult={checkedCrawlResult}
-              onCheckedCrawlResultChange={onCheckedCrawlResultChange}
-              onJobIdChange={onJobIdChange}
-              crawlOptions={crawlOptions}
-              onCrawlOptionsChange={onCrawlOptionsChange}
-            />
-          ) : (
-            <NoData onConfig={handleOnConfig} provider={selectedProvider} />
-          )
+      {
+        selectedProvider === DataSourceProvider.fireCrawl
+          ? sources.find(source => source.provider === DataSourceProvider.fireCrawl)
+            ? (
+              <Firecrawl
+                onPreview={onPreview}
+                checkedCrawlResult={checkedCrawlResult}
+                onCheckedCrawlResultChange={onCheckedCrawlResultChange}
+                onJobIdChange={onJobIdChange}
+                crawlOptions={crawlOptions}
+                onCrawlOptionsChange={onCrawlOptionsChange}
+              />
+            )
+            : (
+              <NoData onConfig={handleOnConfig} provider={selectedProvider} />
+            )
+          : sources.find(source => source.provider === DataSourceProvider.jinaReader)
+            ? (
+              <JinaReader
+                onPreview={onPreview}
+                checkedCrawlResult={checkedCrawlResult}
+                onCheckedCrawlResultChange={onCheckedCrawlResultChange}
+                onJobIdChange={onJobIdChange}
+                crawlOptions={crawlOptions}
+                onCrawlOptionsChange={onCrawlOptionsChange}
+              />
+            )
+            : (
+              <NoData onConfig={handleOnConfig} provider={selectedProvider} />
+            )
       }
     </div>
   )
