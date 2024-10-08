@@ -1,4 +1,5 @@
 import logging
+import uuid
 from typing import Optional, cast
 
 from configs import dify_config
@@ -85,10 +86,14 @@ class WorkflowAppRunner(WorkflowBasedAppRunner):
             inputs = self.application_generate_entity.inputs
             files = self.application_generate_entity.files
 
+            workflow_run_id = str(uuid.uuid4())
             # Create a variable pool.
             system_inputs = {
                 SystemVariableKey.FILES: files,
                 SystemVariableKey.USER_ID: user_id,
+                SystemVariableKey.APP_ID: app_config.app_id,
+                SystemVariableKey.WORKFLOW_ID: app_config.workflow_id,
+                SystemVariableKey.WORKFLOW_RUN_ID: workflow_run_id,
             }
 
             variable_pool = VariablePool(
