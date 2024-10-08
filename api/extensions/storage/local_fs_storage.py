@@ -5,6 +5,7 @@ from pathlib import Path
 
 from flask import Flask
 
+from configs import dify_config
 from extensions.storage.base_storage import BaseStorage
 
 
@@ -13,7 +14,7 @@ class LocalFsStorage(BaseStorage):
 
     def __init__(self, app: Flask):
         super().__init__(app)
-        folder = self.app.config.get("STORAGE_LOCAL_PATH")
+        folder = dify_config.STORAGE_LOCAL_PATH
         if not os.path.isabs(folder):
             folder = os.path.join(app.root_path, folder)
         self.folder = folder
