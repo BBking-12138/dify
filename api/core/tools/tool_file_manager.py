@@ -89,7 +89,7 @@ class ToolFileManager:
     def create_file_by_url(
         user_id: str,
         tenant_id: str,
-        conversation_id: str,
+        conversation_id: str | None,
         file_url: str,
     ) -> ToolFile:
         """
