@@ -9,6 +9,7 @@ from configs.middleware.external.bedrock_config import BedrockConfig
 from configs.middleware.storage.aliyun_oss_storage_config import AliyunOSSStorageConfig
 from configs.middleware.storage.amazon_s3_storage_config import S3StorageConfig
 from configs.middleware.storage.azure_blob_storage_config import AzureBlobStorageConfig
+from configs.middleware.storage.baidu_obs_storage_config import BaiduOBSStorageConfig
 from configs.middleware.storage.google_cloud_storage_config import GoogleCloudStorageConfig
 from configs.middleware.storage.huawei_obs_storage_config import HuaweiCloudOBSStorageConfig
 from configs.middleware.storage.oci_storage_config import OCIStorageConfig
@@ -207,12 +208,13 @@ class MiddlewareConfig(
     StorageConfig,
     AliyunOSSStorageConfig,
     AzureBlobStorageConfig,
+    BaiduOBSStorageConfig,
     GoogleCloudStorageConfig,
-    TencentCloudCOSStorageConfig,
     HuaweiCloudOBSStorageConfig,
-    VolcengineTOSStorageConfig,
-    S3StorageConfig,
     OCIStorageConfig,
+    S3StorageConfig,
+    TencentCloudCOSStorageConfig,
+    VolcengineTOSStorageConfig,
     # configs of vdb and vdb providers
     VectorStoreConfig,
     AnalyticdbConfig,

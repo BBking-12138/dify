@@ -24,10 +24,10 @@ class MockedHttp:
             return response
 
         # get data, files
-        data = kwargs.get("data", None)
-        files = kwargs.get("files", None)
-        json = kwargs.get("json", None)
-        content = kwargs.get("content", None)
+        data = kwargs.get("data")
+        files = kwargs.get("files")
+        json = kwargs.get("json")
+        content = kwargs.get("content")
         if data is not None:
             resp = dumps(data).encode("utf-8")
         elif files is not None:

@@ -1,8 +1,6 @@
-import io
 from unittest.mock import Mock, patch
 
 import pytest
-from werkzeug.datastructures import FileStorage
 
 from core.file import File, FileTransferMethod
 from core.variables import ArrayFileSegment

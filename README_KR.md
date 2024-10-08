@@ -195,9 +195,13 @@ Dify를 Kubernetes에 배포하고 프리미엄 스케일링 설정을 구성했
 
 #### Terraform을 사용한 배포
 
+[terraform](https://www.terraform.io/)을 사용하여 단 한 번의 클릭으로 Dify를 클라우드 플랫폼에 배포하십시오
+
 ##### Azure Global
-[terraform](https://www.terraform.io/)을 사용하여 Azure에 Dify를 원클릭으로 배포하세요.
 - [nikawang의 Azure Terraform](https://github.com/nikawang/dify-azure-terraform)
+
+##### Google Cloud
+- [sotazum의 Google Cloud Terraform](https://github.com/DeNA/dify-google-cloud-terraform)
 
 ## 기여
 

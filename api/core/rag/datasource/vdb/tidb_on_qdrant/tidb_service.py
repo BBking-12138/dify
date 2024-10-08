@@ -170,16 +170,15 @@ class TidbService:
                     "region": region_object,
                     "labels": labels,
                     "spendingLimit": spending_limit,
-                    "rootPassword": password
+                    "rootPassword": password,
                 }
             }
             clusters.append(cluster_data)
 
-        request_body = {
-            "requests": clusters
-        }
-        response = requests.post(f"{api_url}/clusters:batchCreate", json=request_body,
-                                    auth=HTTPDigestAuth(public_key, private_key))
+        request_body = {"requests": clusters}
+        response = requests.post(
+            f"{api_url}/clusters:batchCreate", json=request_body, auth=HTTPDigestAuth(public_key, private_key)
+        )
 
         if response.status_code == 200:
             response_data = response.json()

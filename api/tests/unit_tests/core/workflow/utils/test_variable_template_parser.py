@@ -1,5 +1,4 @@
-from core.helper import encrypter
-from core.variables import SecretVariable, StringSegment
+from core.variables import SecretVariable
 from core.workflow.entities.variable_entities import VariableSelector
 from core.workflow.entities.variable_pool import VariablePool
 from core.workflow.enums import SystemVariableKey
