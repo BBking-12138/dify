@@ -22,10 +22,7 @@ class ToolFileMessageTransformer:
         for message in messages:
             if message.type in {ToolInvokeMessage.MessageType.TEXT, ToolInvokeMessage.MessageType.LINK}:
                 result.append(message)
-            elif (
-                message.type == ToolInvokeMessage.MessageType.IMAGE
-                and isinstance(message.message, str)
-            ):
+            elif message.type == ToolInvokeMessage.MessageType.IMAGE and isinstance(message.message, str):
                 # try to download image
                 try:
                     file = ToolFileManager.create_file_by_url(

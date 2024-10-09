@@ -1,8 +1,7 @@
 import json
 from collections.abc import Mapping
 from datetime import datetime
-from typing import Optional
-from typing import Any
+from typing import Any, Optional
 
 from sqlalchemy import or_
 

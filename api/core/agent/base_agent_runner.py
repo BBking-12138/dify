@@ -43,7 +43,7 @@ from core.tools.tool.tool import Tool
 from core.tools.tool_manager import ToolManager
 from extensions.ext_database import db
 from factories import file_factory
-from models.model import Conversation, Message, MessageAgentThought
+from models.model import Conversation, Message, MessageAgentThought, MessageFile
 from models.tools import ToolConversationVariables
 
 logger = logging.getLogger(__name__)
@@ -495,7 +495,7 @@ class BaseAgentRunner(AppRunner):
         return result
 
     def organize_agent_user_prompt(self, message: Message) -> UserPromptMessage:
-        files = message.message_files
+        files = db.session.query(MessageFile).filter(MessageFile.message_id == message.id).all()
         if files:
             file_extra_config = FileUploadConfigManager.convert(message.app_model_config.to_dict())
 

@@ -1,6 +1,4 @@
-import json
-
-from core.file import FILE_MODEL_IDENTITY, File, FileExtraConfig, FileTransferMethod, FileType
+from core.file import FILE_MODEL_IDENTITY, File, FileTransferMethod, FileType
 
 
 def test_file_loads_and_dumps():

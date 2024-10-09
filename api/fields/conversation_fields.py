@@ -73,7 +73,7 @@ message_detail_fields = {
     "annotation_hit_history": fields.Nested(annotation_hit_history_fields, allow_null=True),
     "created_at": TimestampField,
     "agent_thoughts": fields.List(fields.Nested(agent_thought_fields)),
-    "message_files": fields.List(fields.Nested(message_file_fields), attribute="files"),
+    "message_files": fields.List(fields.Nested(message_file_fields)),
     "metadata": fields.Raw(attribute="message_metadata_dict"),
     "status": fields.String,
     "error": fields.String,

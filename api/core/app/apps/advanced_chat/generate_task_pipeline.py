@@ -9,6 +9,7 @@ from core.app.apps.advanced_chat.app_generator_tts_publisher import AppGenerator
 from core.app.apps.base_app_queue_manager import AppQueueManager, PublishFrom
 from core.app.entities.app_invoke_entities import (
     AdvancedChatAppGenerateEntity,
+    InvokeFrom,
 )
 from core.app.entities.queue_entities import (
     QueueAdvancedChatMessageEndEvent,
@@ -52,8 +53,8 @@ from core.workflow.graph_engine.entities.graph_runtime_state import GraphRuntime
 from enums.workflow_nodes import NodeType
 from events.message_event import message_was_created
 from extensions.ext_database import db
+from models import Conversation, EndUser, Message, MessageFile
 from models.account import Account
-from models.model import Conversation, EndUser, Message
 from models.workflow import (
     Workflow,
     WorkflowRunStatus,
@@ -492,10 +493,6 @@ class AdvancedChatAppGenerateTaskPipeline(BasedGenerateTaskPipeline, WorkflowCyc
             self._conversation_name_generate_thread.join()
 
     def _save_message(self, graph_runtime_state: Optional[GraphRuntimeState] = None) -> None:
-        """
-        Save message.
-        :return:
-        """
         self._refetch_message()
 
         self._message.answer = self._task_state.answer
@@ -503,6 +500,22 @@ class AdvancedChatAppGenerateTaskPipeline(BasedGenerateTaskPipeline, WorkflowCyc
         self._message.message_metadata = (
             json.dumps(jsonable_encoder(self._task_state.metadata)) if self._task_state.metadata else None
         )
+        message_files = [
+            MessageFile(
+                message_id=self._message.id,
+                type=file["type"],
+                transfer_method=file["transfer_method"],
+                url=file["remote_url"],
+                belongs_to="assistant",
+                upload_file_id=file["related_id"],
+                created_by_role="account"
+                if self._message.invoke_from in {InvokeFrom.EXPLORE, InvokeFrom.DEBUGGER}
+                else "end_user",
+                created_by=self._message.from_account_id or self._message.from_end_user_id or "",
+            )
+            for file in self._recorded_files
+        ]
+        db.session.add_all(message_files)
 
         if graph_runtime_state and graph_runtime_state.llm_usage:
             usage = graph_runtime_state.llm_usage

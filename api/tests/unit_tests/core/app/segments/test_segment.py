@@ -1,9 +1,7 @@
 from core.helper import encrypter
 from core.variables import SecretVariable, StringSegment
-from core.workflow.entities.variable_entities import VariableSelector
 from core.workflow.entities.variable_pool import VariablePool
 from core.workflow.enums import SystemVariableKey
-from core.workflow.utils import variable_template_parser
 
 
 def test_segment_group_to_text():

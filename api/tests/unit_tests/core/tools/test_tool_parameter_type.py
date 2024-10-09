@@ -1,5 +1,3 @@
-import pytest
-
 from core.tools.entities.tool_entities import ToolParameter
 
 
