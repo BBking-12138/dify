@@ -9,15 +9,11 @@ from enums import NodeType
 from models.workflow import WorkflowNodeExecutionStatus
 
 
-class StartNode(BaseNode):
+class StartNode(BaseNode[StartNodeData]):
     _node_data_cls = StartNodeData
     _node_type = NodeType.START
 
     def _run(self) -> NodeRunResult:
-        """
-        Run node
-        :return:
-        """
         node_inputs = dict(self.graph_runtime_state.variable_pool.user_inputs)
         system_inputs = self.graph_runtime_state.variable_pool.system_variables
 
@@ -30,13 +26,10 @@ class StartNode(BaseNode):
 
     @classmethod
     def _extract_variable_selector_to_variable_mapping(
-        cls, graph_config: Mapping[str, Any], node_id: str, node_data: StartNodeData
+        cls,
+        *,
+        graph_config: Mapping[str, Any],
+        node_id: str,
+        node_data: StartNodeData,
     ) -> Mapping[str, Sequence[str]]:
-        """
-        Extract variable selector to variable mapping
-        :param graph_config: graph config
-        :param node_id: node id
-        :param node_data: node data
-        :return:
-        """
         return {}

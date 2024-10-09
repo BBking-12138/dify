@@ -16,7 +16,7 @@ from enums import NodeType
 from models.workflow import WorkflowNodeExecutionStatus
 
 
-class AnswerNode(BaseNode):
+class AnswerNode(BaseNode[AnswerNodeData]):
     _node_data_cls = AnswerNodeData
     _node_type: NodeType = NodeType.ANSWER
 
@@ -25,11 +25,8 @@ class AnswerNode(BaseNode):
         Run node
         :return:
         """
-        node_data = self.node_data
-        node_data = cast(AnswerNodeData, node_data)
-
         # generate routes
-        generate_routes = AnswerStreamGeneratorRouter.extract_generate_route_from_node_data(node_data)
+        generate_routes = AnswerStreamGeneratorRouter.extract_generate_route_from_node_data(self.node_data)
 
         answer = ""
         files = []
@@ -52,7 +49,11 @@ class AnswerNode(BaseNode):
 
     @classmethod
     def _extract_variable_selector_to_variable_mapping(
-        cls, graph_config: Mapping[str, Any], node_id: str, node_data: AnswerNodeData
+        cls,
+        *,
+        graph_config: Mapping[str, Any],
+        node_id: str,
+        node_data: AnswerNodeData,
     ) -> Mapping[str, Sequence[str]]:
         """
         Extract variable selector to variable mapping
@@ -61,9 +62,6 @@ class AnswerNode(BaseNode):
         :param node_data: node data
         :return:
         """
-        node_data = node_data
-        node_data = cast(AnswerNodeData, node_data)
-
         variable_template_parser = VariableTemplateParser(template=node_data.answer)
         variable_selectors = variable_template_parser.extract_variable_selectors()
 

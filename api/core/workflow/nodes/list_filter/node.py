@@ -1,5 +1,5 @@
 from collections.abc import Callable, Sequence
-from typing import Literal, cast
+from typing import Literal
 
 from core.file import File
 from core.variables import ArrayFileSegment, ArrayNumberSegment, ArrayStringSegment
@@ -11,25 +11,25 @@ from models.workflow import WorkflowNodeExecutionStatus
 from .models import ListFilterNodeData
 
 
-class ListFilterNode(BaseNode):
+class ListFilterNode(BaseNode[ListFilterNodeData]):
     _node_data_cls = ListFilterNodeData
     _node_type = NodeType.LIST_FILTER
 
     def _run(self):
-        node_data = cast(ListFilterNodeData, self.node_data)
         inputs = {}
         process_data = {}
         outputs = {}
 
-        variable = self.graph_runtime_state.variable_pool.get(node_data.variable)
+        variable = self.graph_runtime_state.variable_pool.get(self.node_data.variable)
         if variable is None:
-            error_message = f"Variable not found for selector: {node_data.variable}"
+            error_message = f"Variable not found for selector: {self.node_data.variable}"
             return NodeRunResult(
                 status=WorkflowNodeExecutionStatus.FAILED, error=error_message, inputs=inputs, outputs=outputs
             )
         if variable.value and not isinstance(variable, ArrayFileSegment | ArrayNumberSegment | ArrayStringSegment):
             error_message = (
-                f"Variable {node_data.variable} is not an ArrayFileSegment, ArrayNumberSegment " "or ArrayStringSegment"
+                f"Variable {self.node_data.variable} is not an ArrayFileSegment, ArrayNumberSegment "
+                "or ArrayStringSegment"
             )
             return NodeRunResult(
                 status=WorkflowNodeExecutionStatus.FAILED, error=error_message, inputs=inputs, outputs=outputs
@@ -41,7 +41,7 @@ class ListFilterNode(BaseNode):
             process_data["variable"] = variable.value
 
         # Filter
-        for filter_by in node_data.filter_by:
+        for filter_by in self.node_data.filter_by:
             if isinstance(variable, ArrayStringSegment):
                 if not isinstance(filter_by.value, str):
                     raise ValueError(f"Invalid filter value: {filter_by.value}")
@@ -70,22 +70,22 @@ class ListFilterNode(BaseNode):
                 variable = variable.model_copy(update={"value": result})
 
         # Order
-        if node_data.order_by.enabled:
+        if self.node_data.order_by.enabled:
             if isinstance(variable, ArrayStringSegment):
-                result = _order_string(order=node_data.order_by.value, array=variable.value)
+                result = _order_string(order=self.node_data.order_by.value, array=variable.value)
                 variable = variable.model_copy(update={"value": result})
             elif isinstance(variable, ArrayNumberSegment):
-                result = _order_number(order=node_data.order_by.value, array=variable.value)
+                result = _order_number(order=self.node_data.order_by.value, array=variable.value)
                 variable = variable.model_copy(update={"value": result})
             elif isinstance(variable, ArrayFileSegment):
                 result = _order_file(
-                    order=node_data.order_by.value, order_by=node_data.order_by.key, array=variable.value
+                    order=self.node_data.order_by.value, order_by=self.node_data.order_by.key, array=variable.value
                 )
                 variable = variable.model_copy(update={"value": result})
 
         # Slice
-        if node_data.limit.enabled:
-            result = variable.value[: node_data.limit.size]
+        if self.node_data.limit.enabled:
+            result = variable.value[: self.node_data.limit.size]
             variable = variable.model_copy(update={"value": result})
 
         outputs = {

@@ -1,6 +1,5 @@
 import json
 from collections.abc import Generator, Mapping, Sequence
-from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Optional, cast
 
 from pydantic import BaseModel
@@ -26,7 +25,6 @@ from core.prompt.utils.prompt_message_util import PromptMessageUtil
 from core.variables import ArrayAnySegment, ArrayFileSegment, FileSegment
 from core.workflow.constants import SYSTEM_VARIABLE_NODE_ID
 from core.workflow.entities.node_entities import NodeRunMetadataKey, NodeRunResult
-from core.workflow.entities.variable_pool import VariablePool
 from core.workflow.enums import SystemVariableKey
 from core.workflow.graph_engine.entities.event import InNodeEvent
 from core.workflow.nodes.base_node import BaseNode
@@ -58,26 +56,23 @@ class ModelInvokeCompleted(BaseModel):
     finish_reason: Optional[str] = None
 
 
-class LLMNode(BaseNode):
+class LLMNode(BaseNode[LLMNodeData]):
     _node_data_cls = LLMNodeData
     _node_type = NodeType.LLM
 
-    def _run(self) -> Generator[RunEvent | InNodeEvent, None, None]:
-        node_data = cast(LLMNodeData, deepcopy(self.node_data))
-        variable_pool = self.graph_runtime_state.variable_pool
-
+    def _run(self) -> NodeRunResult | Generator[RunEvent | InNodeEvent, None, None]:
         node_inputs = None
         process_data = None
 
         try:
             # init messages template
-            node_data.prompt_template = self._transform_chat_messages(node_data.prompt_template)
+            self.node_data.prompt_template = self._transform_chat_messages(self.node_data.prompt_template)
 
             # fetch variables and fetch values from variable pool
-            inputs = self._fetch_inputs(node_data=node_data, variable_pool=variable_pool)
+            inputs = self._fetch_inputs(node_data=self.node_data)
 
             # fetch jinja2 inputs
-            jinja_inputs = self._fetch_jinja_inputs(node_data=node_data, variable_pool=variable_pool)
+            jinja_inputs = self._fetch_jinja_inputs(node_data=self.node_data)
 
             # merge inputs
             inputs.update(jinja_inputs)
@@ -86,8 +81,8 @@ class LLMNode(BaseNode):
 
             # fetch files
             files = (
-                self._fetch_files(variable_pool=variable_pool, selector=node_data.vision.configs.variable_selector)
-                if node_data.vision.enabled
+                self._fetch_files(selector=self.node_data.vision.configs.variable_selector)
+                if self.node_data.vision.enabled
                 else []
             )
 
@@ -95,7 +90,7 @@ class LLMNode(BaseNode):
                 node_inputs["#files#"] = [file.to_dict() for file in files]
 
             # fetch context value
-            generator = self._fetch_context(node_data=node_data, variable_pool=variable_pool)
+            generator = self._fetch_context(node_data=self.node_data)
             context = None
             for event in generator:
                 if isinstance(event, RunRetrieverResourceEvent):
@@ -106,16 +101,14 @@ class LLMNode(BaseNode):
                 node_inputs["#context#"] = context  # type: ignore
 
             # fetch model config
-            model_instance, model_config = self._fetch_model_config(node_data.model)
+            model_instance, model_config = self._fetch_model_config(self.node_data.model)
 
             # fetch memory
-            memory = self._fetch_memory(
-                node_data_memory=node_data.memory, variable_pool=variable_pool, model_instance=model_instance
-            )
+            memory = self._fetch_memory(node_data_memory=self.node_data.memory, model_instance=model_instance)
 
             # fetch prompt messages
-            if node_data.memory:
-                query = variable_pool.get((SYSTEM_VARIABLE_NODE_ID, SystemVariableKey.QUERY))
+            if self.node_data.memory:
+                query = self.graph_runtime_state.variable_pool.get((SYSTEM_VARIABLE_NODE_ID, SystemVariableKey.QUERY))
                 if not query:
                     raise ValueError("Query not found")
                 query = query.text
@@ -129,9 +122,9 @@ class LLMNode(BaseNode):
                 context=context,
                 memory=memory,
                 model_config=model_config,
-                vision_detail=node_data.vision.configs.detail,
-                prompt_template=node_data.prompt_template,
-                memory_config=node_data.memory,
+                vision_detail=self.node_data.vision.configs.detail,
+                prompt_template=self.node_data.prompt_template,
+                memory_config=self.node_data.memory,
             )
 
             process_data = {
@@ -145,7 +138,7 @@ class LLMNode(BaseNode):
 
             # handle invoke result
             generator = self._invoke_llm(
-                node_data_model=node_data.model,
+                node_data_model=self.node_data.model,
                 model_instance=model_instance,
                 prompt_messages=prompt_messages,
                 stop=stop,
@@ -268,7 +261,7 @@ class LLMNode(BaseNode):
 
         return messages
 
-    def _fetch_jinja_inputs(self, node_data: LLMNodeData, variable_pool: VariablePool) -> dict[str, str]:
+    def _fetch_jinja_inputs(self, node_data: LLMNodeData) -> dict[str, str]:
         variables = {}
 
         if not node_data.prompt_config:
@@ -276,7 +269,7 @@ class LLMNode(BaseNode):
 
         for variable_selector in node_data.prompt_config.jinja2_variables or []:
             variable = variable_selector.variable
-            value = variable_pool.get_any(variable_selector.value_selector)
+            value = self.graph_runtime_state.variable_pool.get_any(variable_selector.value_selector)
 
             def parse_dict(d: dict) -> str:
                 """
@@ -318,7 +311,7 @@ class LLMNode(BaseNode):
 
         return variables
 
-    def _fetch_inputs(self, node_data: LLMNodeData, variable_pool: VariablePool) -> dict[str, str]:
+    def _fetch_inputs(self, node_data: LLMNodeData) -> dict[str, str]:
         inputs = {}
         prompt_template = node_data.prompt_template
 
@@ -332,7 +325,7 @@ class LLMNode(BaseNode):
             variable_selectors = variable_template_parser.extract_variable_selectors()
 
         for variable_selector in variable_selectors:
-            variable_value = variable_pool.get_any(variable_selector.value_selector)
+            variable_value = self.graph_runtime_state.variable_pool.get_any(variable_selector.value_selector)
             if variable_value is None:
                 raise ValueError(f"Variable {variable_selector.variable} not found")
 
@@ -344,7 +337,7 @@ class LLMNode(BaseNode):
                 template=memory.query_prompt_template
             ).extract_variable_selectors()
             for variable_selector in query_variable_selectors:
-                variable_value = variable_pool.get_any(variable_selector.value_selector)
+                variable_value = self.graph_runtime_state.variable_pool.get_any(variable_selector.value_selector)
                 if variable_value is None:
                     raise ValueError(f"Variable {variable_selector.variable} not found")
 
@@ -352,8 +345,8 @@ class LLMNode(BaseNode):
 
         return inputs
 
-    def _fetch_files(self, *, variable_pool: VariablePool, selector: Sequence[str]) -> Sequence["File"]:
-        variable = variable_pool.get(selector)
+    def _fetch_files(self, *, selector: Sequence[str]) -> Sequence["File"]:
+        variable = self.graph_runtime_state.variable_pool.get(selector)
         if variable is None:
             return []
         if isinstance(variable, FileSegment):
@@ -366,14 +359,14 @@ class LLMNode(BaseNode):
             return []
         raise ValueError(f"Invalid variable type: {type(variable)}")
 
-    def _fetch_context(self, node_data: LLMNodeData, variable_pool: VariablePool) -> Generator[RunEvent, None, None]:
+    def _fetch_context(self, node_data: LLMNodeData) -> Generator[RunEvent, None, None]:
         if not node_data.context.enabled:
             return
 
         if not node_data.context.variable_selector:
             return
 
-        context_value = variable_pool.get_any(node_data.context.variable_selector)
+        context_value = self.graph_runtime_state.variable_pool.get_any(node_data.context.variable_selector)
         if context_value:
             if isinstance(context_value, str):
                 yield RunRetrieverResourceEvent(retriever_resources=[], context=context_value)
@@ -488,13 +481,15 @@ class LLMNode(BaseNode):
         )
 
     def _fetch_memory(
-        self, node_data_memory: Optional[MemoryConfig], variable_pool: VariablePool, model_instance: ModelInstance
+        self, node_data_memory: Optional[MemoryConfig], model_instance: ModelInstance
     ) -> Optional[TokenBufferMemory]:
         if not node_data_memory:
             return None
 
         # get conversation id
-        conversation_id = variable_pool.get_any(["sys", SystemVariableKey.CONVERSATION_ID.value])
+        conversation_id = self.graph_runtime_state.variable_pool.get_any(
+            ["sys", SystemVariableKey.CONVERSATION_ID.value]
+        )
         if conversation_id is None:
             return None
 

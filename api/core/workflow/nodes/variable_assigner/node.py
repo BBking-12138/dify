@@ -1,5 +1,3 @@
-from typing import cast
-
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -17,27 +15,25 @@ from .exc import VariableAssignerNodeError
 from .node_data import VariableAssignerData, WriteMode
 
 
-class VariableAssignerNode(BaseNode):
+class VariableAssignerNode(BaseNode[VariableAssignerData]):
     _node_data_cls: type[BaseNodeData] = VariableAssignerData
     _node_type: NodeType = NodeType.CONVERSATION_VARIABLE_ASSIGNER
 
     def _run(self) -> NodeRunResult:
-        data = cast(VariableAssignerData, self.node_data)
-
         # Should be String, Number, Object, ArrayString, ArrayNumber, ArrayObject
-        original_variable = self.graph_runtime_state.variable_pool.get(data.assigned_variable_selector)
+        original_variable = self.graph_runtime_state.variable_pool.get(self.node_data.assigned_variable_selector)
         if not isinstance(original_variable, Variable):
             raise VariableAssignerNodeError("assigned variable not found")
 
-        match data.write_mode:
+        match self.node_data.write_mode:
             case WriteMode.OVER_WRITE:
-                income_value = self.graph_runtime_state.variable_pool.get(data.input_variable_selector)
+                income_value = self.graph_runtime_state.variable_pool.get(self.node_data.input_variable_selector)
                 if not income_value:
                     raise VariableAssignerNodeError("input value not found")
                 updated_variable = original_variable.model_copy(update={"value": income_value.value})
 
             case WriteMode.APPEND:
-                income_value = self.graph_runtime_state.variable_pool.get(data.input_variable_selector)
+                income_value = self.graph_runtime_state.variable_pool.get(self.node_data.input_variable_selector)
                 if not income_value:
                     raise VariableAssignerNodeError("input value not found")
                 updated_value = original_variable.value + [income_value.value]
@@ -48,10 +44,10 @@ class VariableAssignerNode(BaseNode):
                 updated_variable = original_variable.model_copy(update={"value": income_value.to_object()})
 
             case _:
-                raise VariableAssignerNodeError(f"unsupported write mode: {data.write_mode}")
+                raise VariableAssignerNodeError(f"unsupported write mode: {self.node_data.write_mode}")
 
         # Over write the variable.
-        self.graph_runtime_state.variable_pool.add(data.assigned_variable_selector, updated_variable)
+        self.graph_runtime_state.variable_pool.add(self.node_data.assigned_variable_selector, updated_variable)
 
         # TODO: Move database operation to the pipeline.
         # Update conversation variable.

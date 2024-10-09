@@ -2,7 +2,7 @@ import logging
 from collections.abc import Mapping, Sequence
 from mimetypes import guess_extension
 from os import path
-from typing import Any, cast
+from typing import Any
 
 from configs import dify_config
 from core.file import File, FileTransferMethod, FileType
@@ -28,7 +28,7 @@ HTTP_REQUEST_DEFAULT_TIMEOUT = HttpRequestNodeTimeout(
 logger = logging.getLogger(__name__)
 
 
-class HttpRequestNode(BaseNode):
+class HttpRequestNode(BaseNode[HttpRequestNodeData]):
     _node_data_cls = HttpRequestNodeData
     _node_type = NodeType.HTTP_REQUEST
 
@@ -52,13 +52,11 @@ class HttpRequestNode(BaseNode):
         }
 
     def _run(self) -> NodeRunResult:
-        node_data: HttpRequestNodeData = cast(HttpRequestNodeData, self.node_data)
-
         process_data = {}
         try:
             http_executor = HttpExecutor(
-                node_data=node_data,
-                timeout=self._get_request_timeout(node_data),
+                node_data=self.node_data,
+                timeout=self._get_request_timeout(self.node_data),
                 variable_pool=self.graph_runtime_state.variable_pool,
             )
             process_data["request"] = http_executor.to_log()
@@ -99,6 +97,7 @@ class HttpRequestNode(BaseNode):
     @classmethod
     def _extract_variable_selector_to_variable_mapping(
         cls,
+        *,
         graph_config: Mapping[str, Any],
         node_id: str,
         node_data: HttpRequestNodeData,
