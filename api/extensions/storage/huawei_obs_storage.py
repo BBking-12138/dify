@@ -1,6 +1,5 @@
 from collections.abc import Generator
 
-from flask import Flask
 from obs import ObsClient
 
 from configs import dify_config
@@ -10,8 +9,8 @@ from extensions.storage.base_storage import BaseStorage
 class HuaweiObsStorage(BaseStorage):
     """Implementation for Huawei OBS storage."""
 
-    def __init__(self, app: Flask):
-        super().__init__(app)
+    def __init__(self):
+        super().__init__()
 
         self.bucket_name = dify_config.HUAWEI_OBS_BUCKET_NAME
         self.client = ObsClient(

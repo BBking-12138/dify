@@ -2,7 +2,6 @@ from collections.abc import Generator
 from datetime import datetime, timedelta, timezone
 
 from azure.storage.blob import AccountSasPermissions, BlobServiceClient, ResourceTypes, generate_account_sas
-from flask import Flask
 
 from configs import dify_config
 from extensions.ext_redis import redis_client
@@ -12,9 +11,8 @@ from extensions.storage.base_storage import BaseStorage
 class AzureBlobStorage(BaseStorage):
     """Implementation for Azure Blob storage."""
 
-    def __init__(self, app: Flask):
-        super().__init__(app)
-
+    def __init__(self):
+        super().__init__()
         self.bucket_name = dify_config.AZURE_BLOB_CONTAINER_NAME
         self.account_url = dify_config.AZURE_BLOB_ACCOUNT_URL
         self.account_name = dify_config.AZURE_BLOB_ACCOUNT_NAME

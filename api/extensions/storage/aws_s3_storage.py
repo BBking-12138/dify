@@ -4,7 +4,6 @@ from contextlib import closing
 import boto3
 from botocore.client import Config
 from botocore.exceptions import ClientError
-from flask import Flask
 
 from configs import dify_config
 from extensions.storage.base_storage import BaseStorage
@@ -13,9 +12,8 @@ from extensions.storage.base_storage import BaseStorage
 class AwsS3Storage(BaseStorage):
     """Implementation for Amazon Web Services S3 storage."""
 
-    def __init__(self, app: Flask):
-        super().__init__(app)
-
+    def __init__(self):
+        super().__init__()
         self.bucket_name = dify_config.S3_BUCKET_NAME
         if dify_config.S3_USE_AWS_MANAGED_IAM:
             session = boto3.Session()

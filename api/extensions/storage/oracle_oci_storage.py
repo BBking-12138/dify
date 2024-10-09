@@ -3,7 +3,6 @@ from contextlib import closing
 
 import boto3
 from botocore.exceptions import ClientError
-from flask import Flask
 
 from configs import dify_config
 from extensions.storage.base_storage import BaseStorage
@@ -12,8 +11,8 @@ from extensions.storage.base_storage import BaseStorage
 class OracleOCIStorage(BaseStorage):
     """Implementation for Oracle OCI storage."""
 
-    def __init__(self, app: Flask):
-        super().__init__(app)
+    def __init__(self):
+        super().__init__()
 
         self.bucket_name = dify_config.OCI_BUCKET_NAME
         self.client = boto3.client(

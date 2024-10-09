@@ -1,6 +1,5 @@
 from collections.abc import Generator
 
-from flask import Flask
 from qcloud_cos import CosConfig, CosS3Client
 
 from configs import dify_config
@@ -10,8 +9,8 @@ from extensions.storage.base_storage import BaseStorage
 class TencentCosStorage(BaseStorage):
     """Implementation for Tencent Cloud COS storage."""
 
-    def __init__(self, app: Flask):
-        super().__init__(app)
+    def __init__(self):
+        super().__init__()
 
         self.bucket_name = dify_config.TENCENT_COS_BUCKET_NAME
         config = CosConfig(

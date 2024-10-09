@@ -5,7 +5,6 @@ from collections.abc import Generator
 from baidubce.auth.bce_credentials import BceCredentials
 from baidubce.bce_client_configuration import BceClientConfiguration
 from baidubce.services.bos.bos_client import BosClient
-from flask import Flask
 
 from configs import dify_config
 from extensions.storage.base_storage import BaseStorage
@@ -14,9 +13,8 @@ from extensions.storage.base_storage import BaseStorage
 class BaiduObsStorage(BaseStorage):
     """Implementation for Baidu OBS storage."""
 
-    def __init__(self, app: Flask):
-        super().__init__(app)
-
+    def __init__(self):
+        super().__init__()
         self.bucket_name = dify_config.BAIDU_OBS_BUCKET_NAME
         client_config = BceClientConfiguration(
             credentials=BceCredentials(

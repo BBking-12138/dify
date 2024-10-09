@@ -2,7 +2,6 @@ from collections.abc import Generator
 from contextlib import closing
 
 import oss2 as aliyun_s3
-from flask import Flask
 
 from configs import dify_config
 from extensions.storage.base_storage import BaseStorage
@@ -11,9 +10,8 @@ from extensions.storage.base_storage import BaseStorage
 class AliyunOssStorage(BaseStorage):
     """Implementation for Aliyun OSS storage."""
 
-    def __init__(self, app: Flask):
-        super().__init__(app)
-
+    def __init__(self):
+        super().__init__()
         self.bucket_name = dify_config.ALIYUN_OSS_BUCKET_NAME
         self.folder = dify_config.ALIYUN_OSS_PATH
         oss_auth_method = aliyun_s3.Auth

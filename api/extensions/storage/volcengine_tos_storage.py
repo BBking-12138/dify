@@ -1,7 +1,6 @@
 from collections.abc import Generator
 
 import tos
-from flask import Flask
 
 from configs import dify_config
 from extensions.storage.base_storage import BaseStorage
@@ -10,9 +9,8 @@ from extensions.storage.base_storage import BaseStorage
 class VolcengineTosStorage(BaseStorage):
     """Implementation for Volcengine TOS storage."""
 
-    def __init__(self, app: Flask):
-        super().__init__(app)
-
+    def __init__(self):
+        super().__init__()
         self.bucket_name = dify_config.VOLCENGINE_TOS_BUCKET_NAME
         self.client = tos.TosClientV2(
             ak=dify_config.VOLCENGINE_TOS_ACCESS_KEY,
