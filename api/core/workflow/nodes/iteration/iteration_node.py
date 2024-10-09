@@ -29,7 +29,7 @@ from models.workflow import WorkflowNodeExecutionStatus
 logger = logging.getLogger(__name__)
 
 
-class IterationNode(BaseNode):
+class IterationNode(BaseNode[IterationNodeData]):
     """
     Iteration Node.
     """
@@ -41,7 +41,6 @@ class IterationNode(BaseNode):
         """
         Run the node.
         """
-        self.node_data = cast(IterationNodeData, self.node_data)
         iterator_list_segment = self.graph_runtime_state.variable_pool.get(self.node_data.iterator_selector)
 
         if not iterator_list_segment:
@@ -248,7 +247,11 @@ class IterationNode(BaseNode):
 
     @classmethod
     def _extract_variable_selector_to_variable_mapping(
-        cls, graph_config: Mapping[str, Any], node_id: str, node_data: IterationNodeData
+        cls,
+        *,
+        graph_config: Mapping[str, Any],
+        node_id: str,
+        node_data: IterationNodeData,
     ) -> Mapping[str, Sequence[str]]:
         """
         Extract variable selector to variable mapping

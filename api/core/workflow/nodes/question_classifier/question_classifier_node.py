@@ -42,7 +42,7 @@ class QuestionClassifierNode(LLMNode):
     _node_data_cls = QuestionClassifierNodeData
     _node_type = NodeType.QUESTION_CLASSIFIER
 
-    def _run(self) -> NodeRunResult:
+    def _run(self):
         node_data = cast(QuestionClassifierNodeData, self.node_data)
         variable_pool = self.graph_runtime_state.variable_pool
 
@@ -55,7 +55,6 @@ class QuestionClassifierNode(LLMNode):
         # fetch memory
         memory = self._fetch_memory(
             node_data_memory=node_data.memory,
-            variable_pool=variable_pool,
             model_instance=model_instance,
         )
         # fetch instruction
@@ -64,7 +63,6 @@ class QuestionClassifierNode(LLMNode):
 
         files: Sequence[File] = (
             self._fetch_files(
-                variable_pool=variable_pool,
                 selector=node_data.vision.configs.variable_selector,
             )
             if node_data.vision.enabled
@@ -167,7 +165,11 @@ class QuestionClassifierNode(LLMNode):
 
     @classmethod
     def _extract_variable_selector_to_variable_mapping(
-        cls, graph_config: Mapping[str, Any], node_id: str, node_data: QuestionClassifierNodeData
+        cls,
+        *,
+        graph_config: Mapping[str, Any],
+        node_id: str,
+        node_data: QuestionClassifierNodeData,
     ) -> Mapping[str, Sequence[str]]:
         """
         Extract variable selector to variable mapping

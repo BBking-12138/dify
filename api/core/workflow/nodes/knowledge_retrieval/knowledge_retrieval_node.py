@@ -33,15 +33,13 @@ default_retrieval_model = {
 }
 
 
-class KnowledgeRetrievalNode(BaseNode):
+class KnowledgeRetrievalNode(BaseNode[KnowledgeRetrievalNodeData]):
     _node_data_cls = KnowledgeRetrievalNodeData
     _node_type = NodeType.KNOWLEDGE_RETRIEVAL
 
     def _run(self) -> NodeRunResult:
-        node_data = cast(KnowledgeRetrievalNodeData, self.node_data)
-
         # extract variables
-        variable = self.graph_runtime_state.variable_pool.get_any(node_data.query_variable_selector)
+        variable = self.graph_runtime_state.variable_pool.get_any(self.node_data.query_variable_selector)
         query = variable
         variables = {"query": query}
         if not query:
@@ -50,7 +48,7 @@ class KnowledgeRetrievalNode(BaseNode):
             )
         # retrieve knowledge
         try:
-            results = self._fetch_dataset_retriever(node_data=node_data, query=query)
+            results = self._fetch_dataset_retriever(node_data=self.node_data, query=query)
             outputs = {"result": results}
             return NodeRunResult(
                 status=WorkflowNodeExecutionStatus.SUCCEEDED, inputs=variables, process_data=None, outputs=outputs
@@ -241,7 +239,11 @@ class KnowledgeRetrievalNode(BaseNode):
 
     @classmethod
     def _extract_variable_selector_to_variable_mapping(
-        cls, graph_config: Mapping[str, Any], node_id: str, node_data: KnowledgeRetrievalNodeData
+        cls,
+        *,
+        graph_config: Mapping[str, Any],
+        node_id: str,
+        node_data: KnowledgeRetrievalNodeData,
     ) -> Mapping[str, Sequence[str]]:
         """
         Extract variable selector to variable mapping

@@ -1,5 +1,5 @@
 from collections.abc import Mapping, Sequence
-from typing import Any, cast
+from typing import Any
 
 from core.workflow.entities.node_entities import NodeRunResult
 from core.workflow.nodes.base_node import BaseNode
@@ -8,7 +8,7 @@ from enums import NodeType
 from models.workflow import WorkflowNodeExecutionStatus
 
 
-class EndNode(BaseNode):
+class EndNode(BaseNode[EndNodeData]):
     _node_data_cls = EndNodeData
     _node_type = NodeType.END
 
@@ -17,9 +17,7 @@ class EndNode(BaseNode):
         Run node
         :return:
         """
-        node_data = self.node_data
-        node_data = cast(EndNodeData, node_data)
-        output_variables = node_data.outputs
+        output_variables = self.node_data.outputs
 
         outputs = {}
         for variable_selector in output_variables:
@@ -35,7 +33,11 @@ class EndNode(BaseNode):
 
     @classmethod
     def _extract_variable_selector_to_variable_mapping(
-        cls, graph_config: Mapping[str, Any], node_id: str, node_data: EndNodeData
+        cls,
+        *,
+        graph_config: Mapping[str, Any],
+        node_id: str,
+        node_data: EndNodeData,
     ) -> Mapping[str, Sequence[str]]:
         """
         Extract variable selector to variable mapping

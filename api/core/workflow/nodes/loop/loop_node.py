@@ -6,7 +6,7 @@ from core.workflow.utils.condition.entities import Condition
 from enums import NodeType
 
 
-class LoopNode(BaseNode):
+class LoopNode(BaseNode[LoopNodeData]):
     """
     Loop Node.
     """
