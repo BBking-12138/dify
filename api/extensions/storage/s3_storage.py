@@ -18,7 +18,11 @@ class S3Storage(BaseStorage):
         self.bucket_name = app_config.get("S3_BUCKET_NAME")
         if app_config.get("S3_USE_AWS_MANAGED_IAM"):
             session = boto3.Session()
-            self.client = session.client("s3")
+            region_name = app_config.get("S3_REGION")
+            if region_name:
+                self.client = session.client(service_name="s3", region_name=region_name)
+            else:
+                self.client = session.client("s3")
         else:
             self.client = boto3.client(
                 "s3",
