@@ -235,13 +235,13 @@ class MessageBasedAppGenerator(BaseAppGenerator):
         for file in application_generate_entity.files:
             message_file = MessageFile(
                 message_id=message.id,
-                type=file.type.value,
-                transfer_method=file.transfer_method.value,
+                type=file.type,
+                transfer_method=file.transfer_method,
                 belongs_to="user",
                 url=file.remote_url,
                 upload_file_id=file.related_id,
                 created_by_role=("account" if account_id else "end_user"),
-                created_by=account_id or end_user_id,
+                created_by=account_id or end_user_id or "",
             )
             db.session.add(message_file)
             db.session.commit()

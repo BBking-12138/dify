@@ -1,6 +1,6 @@
 import json
 import time
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from datetime import datetime, timezone
 from typing import Any, Optional, Union, cast
 
@@ -607,7 +607,7 @@ class WorkflowCycleManage:
             ),
         )
 
-    def _fetch_files_from_node_outputs(self, outputs_dict: dict) -> list[dict]:
+    def _fetch_files_from_node_outputs(self, outputs_dict: dict) -> Sequence[Mapping[str, Any]]:
         """
         Fetch files from node outputs
         :param outputs_dict: node outputs dict
@@ -624,7 +624,7 @@ class WorkflowCycleManage:
 
         return files
 
-    def _fetch_files_from_variable_value(self, value: Union[dict, list]) -> list[dict]:
+    def _fetch_files_from_variable_value(self, value: Union[dict, list]) -> Sequence[Mapping[str, Any]]:
         """
         Fetch files from variable value
         :param value: variable value
@@ -636,17 +636,17 @@ class WorkflowCycleManage:
         files = []
         if isinstance(value, list):
             for item in value:
-                file_var = self._get_file_var_from_value(item)
-                if file_var:
-                    files.append(file_var)
+                file = self._get_file_var_from_value(item)
+                if file:
+                    files.append(file)
         elif isinstance(value, dict):
-            file_var = self._get_file_var_from_value(value)
-            if file_var:
-                files.append(file_var)
+            file = self._get_file_var_from_value(value)
+            if file:
+                files.append(file)
 
         return files
 
-    def _get_file_var_from_value(self, value: Union[dict, list]) -> Mapping[str, str | int | None] | None:
+    def _get_file_var_from_value(self, value: Union[dict, list]) -> Mapping[str, Any] | None:
         """
         Get file var from value
         :param value: variable value

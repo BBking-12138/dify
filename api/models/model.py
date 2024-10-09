@@ -4,7 +4,7 @@ import uuid
 from collections.abc import Mapping, Sequence
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 from flask import request
 from flask_login import UserMixin
@@ -13,10 +13,9 @@ from sqlalchemy import Float, func, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from configs import dify_config
-from core.file import FILE_MODEL_IDENTITY, File
+from core.file import FILE_MODEL_IDENTITY, File, FileTransferMethod, FileType
 from core.file import helpers as file_helpers
 from core.file.tool_file_parser import ToolFileParser
-from enums import FileTransferMethod, FileType
 from extensions.ext_database import db
 from libs.helper import generate_string
 
@@ -741,7 +740,7 @@ class Message(db.Model):
     message_tokens = db.Column(db.Integer, nullable=False, server_default=db.text("0"))
     message_unit_price = db.Column(db.Numeric(10, 4), nullable=False)
     message_price_unit = db.Column(db.Numeric(10, 7), nullable=False, server_default=db.text("0.001"))
-    answer = db.Column(db.Text, nullable=False)
+    answer: Mapped[str] = db.Column(db.Text, nullable=False)
     answer_tokens = db.Column(db.Integer, nullable=False, server_default=db.text("0"))
     answer_unit_price = db.Column(db.Numeric(10, 4), nullable=False)
     answer_price_unit = db.Column(db.Numeric(10, 7), nullable=False, server_default=db.text("0.001"))
@@ -752,10 +751,10 @@ class Message(db.Model):
     status = db.Column(db.String(255), nullable=False, server_default=db.text("'normal'::character varying"))
     error = db.Column(db.Text)
     message_metadata = db.Column(db.Text)
-    invoke_from = db.Column(db.String(255), nullable=True)
+    invoke_from: Mapped[Optional[str]] = db.Column(db.String(255), nullable=True)
     from_source = db.Column(db.String(255), nullable=False)
-    from_end_user_id = db.Column(StringUUID)
-    from_account_id = db.Column(StringUUID)
+    from_end_user_id: Mapped[Optional[str]] = db.Column(StringUUID)
+    from_account_id: Mapped[Optional[str]] = db.Column(StringUUID)
     created_at = db.Column(db.DateTime, nullable=False, server_default=db.text("CURRENT_TIMESTAMP(0)"))
     updated_at = db.Column(db.DateTime, nullable=False, server_default=db.text("CURRENT_TIMESTAMP(0)"))
     agent_based = db.Column(db.Boolean, nullable=False, server_default=db.text("false"))
@@ -927,35 +926,38 @@ class Message(db.Model):
 
     @property
     def message_files(self):
-        return db.session.query(MessageFile).filter(MessageFile.message_id == self.id).all()
-
-    @property
-    def files(self):
-        message_files = self.message_files
+        message_files = db.session.query(MessageFile).filter(MessageFile.message_id == self.id).all()
 
         files = []
         for message_file in message_files:
             url = message_file.url
-            if message_file.type == "image":
-                if message_file.transfer_method == "local_file":
+            if message_file.transfer_method == "local_file":
+                if message_file.upload_file_id is None:
+                    # Skip invalid message file
+                    continue
+                if message_file.type == "image":
                     url = file_helpers.get_signed_image_url(message_file.upload_file_id)
-                if message_file.transfer_method == "tool_file":
-                    # get tool file id
-                    tool_file_id = message_file.url.split("/")[-1]
-                    # trim extension
-                    tool_file_id = tool_file_id.split(".")[0]
+                else:
+                    url = file_helpers.get_signed_file_url(message_file.upload_file_id)
+            if message_file.transfer_method == "tool_file":
+                if message_file.url is None:
+                    # Skip invalid message file
+                    continue
 
-                    # get extension
-                    if "." in message_file.url:
-                        extension = f'.{message_file.url.split(".")[-1]}'
-                        if len(extension) > 10:
-                            extension = ".bin"
-                    else:
+                # get tool file id
+                tool_file_id = message_file.url.split("/")[-1]
+                # trim extension
+                tool_file_id = tool_file_id.split(".")[0]
+
+                # get extension
+                if "." in message_file.url:
+                    extension = f'.{message_file.url.split(".")[-1]}'
+                    if len(extension) > 10:
                         extension = ".bin"
-                    # add sign url
-                    url = ToolFileParser.get_tool_file_manager().sign_file(
-                        tool_file_id=tool_file_id, extension=extension
-                    )
+                else:
+                    extension = ".bin"
+                # add sign url
+                url = ToolFileParser.get_tool_file_manager().sign_file(tool_file_id=tool_file_id, extension=extension)
 
             files.append(
                 {
@@ -1056,16 +1058,39 @@ class MessageFile(db.Model):
         db.Index("message_file_created_by_idx", "created_by"),
     )
 
-    id = db.Column(StringUUID, server_default=db.text("uuid_generate_v4()"))
-    message_id = db.Column(StringUUID, nullable=False)
-    type = db.Column(db.String(255), nullable=False)
-    transfer_method = db.Column(db.String(255), nullable=False)
-    url = db.Column(db.Text, nullable=True)
-    belongs_to = db.Column(db.String(255), nullable=True)
-    upload_file_id = db.Column(StringUUID, nullable=True)
-    created_by_role = db.Column(db.String(255), nullable=False)
-    created_by = db.Column(StringUUID, nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, server_default=db.text("CURRENT_TIMESTAMP(0)"))
+    def __init__(
+        self,
+        *,
+        message_id: str,
+        type: FileType,
+        transfer_method: FileTransferMethod,
+        url: str | None = None,
+        belongs_to: Literal["user", "assistant"] | None = None,
+        upload_file_id: str | None = None,
+        created_by_role: Literal["account", "end_user"],
+        created_by: str,
+    ):
+        self.message_id = message_id
+        self.type = type
+        self.transfer_method = transfer_method
+        self.url = url
+        self.belongs_to = belongs_to
+        self.upload_file_id = upload_file_id
+        self.created_by_role = created_by_role
+        self.created_by = created_by
+
+    id: Mapped[str] = db.Column(StringUUID, server_default=db.text("uuid_generate_v4()"))
+    message_id: Mapped[str] = db.Column(StringUUID, nullable=False)
+    type: Mapped[str] = db.Column(db.String(255), nullable=False)
+    transfer_method: Mapped[str] = db.Column(db.String(255), nullable=False)
+    url: Mapped[Optional[str]] = db.Column(db.Text, nullable=True)
+    belongs_to: Mapped[Optional[str]] = db.Column(db.String(255), nullable=True)
+    upload_file_id: Mapped[Optional[str]] = db.Column(StringUUID, nullable=True)
+    created_by_role: Mapped[str] = db.Column(db.String(255), nullable=False)
+    created_by: Mapped[str] = db.Column(StringUUID, nullable=False)
+    created_at: Mapped[datetime] = db.Column(
+        db.DateTime, nullable=False, server_default=db.text("CURRENT_TIMESTAMP(0)")
+    )
 
 
 class MessageAnnotation(db.Model):

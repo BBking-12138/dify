@@ -24,7 +24,6 @@ class SecurityConfig(BaseSettings):
         description="Secret key for secure session cookie signing."
         "Make sure you are changing this key for your deployment with a strong key."
         "Generate a strong key using `openssl rand -base64 42` or set via the `SECRET_KEY` environment variable.",
-        default=None,
     )
 
     RESET_PASSWORD_TOKEN_EXPIRY_HOURS: PositiveInt = Field(
