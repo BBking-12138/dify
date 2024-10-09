@@ -64,6 +64,7 @@ export const useChat = (
   const suggestedQuestionsAbortControllerRef = useRef<AbortController | null>(null)
   const params = useParams()
   const pathname = usePathname()
+  const openingStatementRef = useRef(config?.opening_statement)
   useEffect(() => {
     setAutoFreeze(false)
     return () => {
@@ -84,7 +85,9 @@ export const useChat = (
     return processOpeningStatement(str, formSettings?.inputs || {}, formSettings?.inputsForm || [])
   }, [formSettings?.inputs, formSettings?.inputsForm])
   useEffect(() => {
-    if (config?.opening_statement) {
+    // for temporary fix, need to refactor
+    if (config?.opening_statement && config?.opening_statement !== openingStatementRef.current) {
+      openingStatementRef.current = config.opening_statement
       handleUpdateChatList(produce(chatListRef.current, (draft) => {
         const index = draft.findIndex(item => item.isOpeningStatement)
 
