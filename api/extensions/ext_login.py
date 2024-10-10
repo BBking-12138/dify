@@ -5,7 +5,6 @@ from flask import Response, request
 from werkzeug.exceptions import Unauthorized
 
 import contexts
-from events import event_handlers  # noqa: F401
 from libs.passport import PassportService
 from services.account_service import AccountService
 
