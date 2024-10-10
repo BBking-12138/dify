@@ -1,14 +1,14 @@
 identity: # 工具的基本信息
-  name: google_search # 工具名称，唯一，不允许和其他工具重名
+  name: baidu_search # 工具名称，唯一，不允许和其他工具重名
   author: Dify # 作者
   label: # 标签，用于前端展示
-    en_US: GoogleSearch # 英文标签
-    zh_Hans: 谷歌搜索 # 中文标签
+    en_US: baiduSearch # 英文标签
+    zh_Hans: 百度搜索 # 中文标签
 description: # 描述，用于前端展示
   human: # 用于前端展示的介绍，支持多语言
-    en_US: A tool for performing a Google SERP search and extracting snippets and webpages.Input should be a search query.
-    zh_Hans: 一个用于执行 Google SERP 搜索并提取片段和网页的工具。输入应该是一个搜索查询。
-  llm: A tool for performing a Google SERP search and extracting snippets and webpages.Input should be a search query. # 传递给 LLM 的介绍，为了使得LLM更好理解这个工具，我们建议在这里写上关于这个工具尽可能详细的信息，让 LLM 能够理解并使用这个工具
+    en_US: A tool for performing a baidu search and extracting snippets and webpages.Input should be a search query.
+    zh_Hans: 一个用于执行 baidu 搜索并提取片段和网页的工具。输入应该是一个搜索查询。
+  llm: A tool for performing abaidu search and extracting snippets and webpages.Input should be a search query. # 传递给 LLM 的介绍，为了使得LLM更好理解这个工具，我们建议在这里写上关于这个工具尽可能详细的信息，让 LLM 能够理解并使用这个工具
 parameters: # 参数列表
   - name: query # 参数名称
     type: string # 参数类型
