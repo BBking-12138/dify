@@ -68,7 +68,7 @@ class ParameterExtractorNode(LLMNode):
             }
         }
 
-    def _run(self) -> NodeRunResult:
+    def _run(self):
         """
         Run the node.
         """
@@ -78,7 +78,6 @@ class ParameterExtractorNode(LLMNode):
 
         files = (
             self._fetch_files(
-                variable_pool=self.graph_runtime_state.variable_pool,
                 selector=node_data.vision.configs.variable_selector,
             )
             if node_data.vision.enabled
@@ -100,7 +99,6 @@ class ParameterExtractorNode(LLMNode):
         # fetch memory
         memory = self._fetch_memory(
             node_data_memory=node_data.memory,
-            variable_pool=self.graph_runtime_state.variable_pool,
             model_instance=model_instance,
         )
 
@@ -148,7 +146,7 @@ class ParameterExtractorNode(LLMNode):
         }
 
         try:
-            text, usage, tool_call = self._invoke_llm(
+            text, usage, tool_call = self._invoke(
                 node_data_model=node_data.model,
                 model_instance=model_instance,
                 prompt_messages=prompt_messages,
@@ -199,7 +197,7 @@ class ParameterExtractorNode(LLMNode):
             llm_usage=usage,
         )
 
-    def _invoke_llm(
+    def _invoke(
         self,
         node_data_model: ModelConfig,
         model_instance: ModelInstance,
@@ -747,7 +745,11 @@ class ParameterExtractorNode(LLMNode):
 
     @classmethod
     def _extract_variable_selector_to_variable_mapping(
-        cls, graph_config: Mapping[str, Any], node_id: str, node_data: ParameterExtractorNodeData
+        cls,
+        *,
+        graph_config: Mapping[str, Any],
+        node_id: str,
+        node_data: ParameterExtractorNodeData,
     ) -> Mapping[str, Sequence[str]]:
         """
         Extract variable selector to variable mapping

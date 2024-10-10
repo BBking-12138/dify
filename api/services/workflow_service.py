@@ -252,7 +252,7 @@ class WorkflowService:
         workflow_node_execution.triggered_from = WorkflowNodeExecutionTriggeredFrom.SINGLE_STEP.value
         workflow_node_execution.index = 1
         workflow_node_execution.node_id = node_id
-        workflow_node_execution.node_type = node_instance.node_type.value
+        workflow_node_execution.node_type = node_instance.node_type
         workflow_node_execution.title = node_instance.node_data.title
         workflow_node_execution.elapsed_time = time.perf_counter() - start_at
         workflow_node_execution.created_by_role = CreatedByRole.ACCOUNT.value

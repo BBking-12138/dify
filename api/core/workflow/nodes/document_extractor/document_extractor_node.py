@@ -1,6 +1,5 @@
 import csv
 import io
-from typing import cast
 
 import docx
 import pandas as pd
@@ -24,7 +23,7 @@ from .exc import DocumentExtractorError, FileDownloadError, TextExtractionError,
 from .models import DocumentExtractorNodeData
 
 
-class DocumentExtractorNode(BaseNode):
+class DocumentExtractorNode(BaseNode[DocumentExtractorNodeData]):
     """
     Extracts text content from various file types.
     Supports plain text, PDF, and DOC/DOCX files.
@@ -34,8 +33,7 @@ class DocumentExtractorNode(BaseNode):
     _node_type = NodeType.DOCUMENT_EXTRACTOR
 
     def _run(self):
-        node_data = cast(DocumentExtractorNodeData, self.node_data)
-        variable_selector = node_data.variable_selector
+        variable_selector = self.node_data.variable_selector
         variable = self.graph_runtime_state.variable_pool.get(variable_selector)
 
         if variable is None:

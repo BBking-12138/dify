@@ -1,6 +1,6 @@
 from collections.abc import Mapping, Sequence
 from os import path
-from typing import Any, cast
+from typing import Any
 
 from core.callback_handler.workflow_tool_callback_handler import DifyWorkflowCallbackHandler
 from core.file.models import File, FileTransferMethod, FileType
@@ -17,7 +17,7 @@ from enums import NodeType
 from models.workflow import WorkflowNodeExecutionStatus
 
 
-class ToolNode(BaseNode):
+class ToolNode(BaseNode[ToolNodeData]):
     """
     Tool Node
     """
@@ -26,22 +26,16 @@ class ToolNode(BaseNode):
     _node_type = NodeType.TOOL
 
     def _run(self) -> NodeRunResult:
-        """
-        Run the tool node
-        """
-
-        node_data = cast(ToolNodeData, self.node_data)
-
         # fetch tool icon
         tool_info = {
-            "provider_type": node_data.provider_type,
-            "provider_id": node_data.provider_id,
+            "provider_type": self.node_data.provider_type,
+            "provider_id": self.node_data.provider_id,
         }
 
         # get tool runtime
         try:
             tool_runtime = ToolManager.get_workflow_tool_runtime(
-                self.tenant_id, self.app_id, self.node_id, node_data, self.invoke_from
+                self.tenant_id, self.app_id, self.node_id, self.node_data, self.invoke_from
             )
         except Exception as e:
             return NodeRunResult(
@@ -58,12 +52,12 @@ class ToolNode(BaseNode):
         parameters = self._generate_parameters(
             tool_parameters=tool_parameters,
             variable_pool=self.graph_runtime_state.variable_pool,
-            node_data=node_data,
+            node_data=self.node_data,
         )
         parameters_for_log = self._generate_parameters(
             tool_parameters=tool_parameters,
             variable_pool=self.graph_runtime_state.variable_pool,
-            node_data=node_data,
+            node_data=self.node_data,
             for_log=True,
         )
 
@@ -231,12 +225,16 @@ class ToolNode(BaseNode):
             ]
         )
 
-    def _extract_tool_response_json(self, tool_response: list[ToolInvokeMessage]) -> list[dict]:
+    def _extract_tool_response_json(self, tool_response: list[ToolInvokeMessage]):
         return [message.message for message in tool_response if message.type == ToolInvokeMessage.MessageType.JSON]
 
     @classmethod
     def _extract_variable_selector_to_variable_mapping(
-        cls, graph_config: Mapping[str, Any], node_id: str, node_data: ToolNodeData
+        cls,
+        *,
+        graph_config: Mapping[str, Any],
+        node_id: str,
+        node_data: ToolNodeData,
     ) -> Mapping[str, Sequence[str]]:
         """
         Extract variable selector to variable mapping
@@ -249,7 +247,7 @@ class ToolNode(BaseNode):
         for parameter_name in node_data.tool_parameters:
             input = node_data.tool_parameters[parameter_name]
             if input.type == "mixed":
-                selectors = VariableTemplateParser(input.value).extract_variable_selectors()
+                selectors = VariableTemplateParser(str(input.value)).extract_variable_selectors()
                 for selector in selectors:
                     result[selector.variable] = selector.value_selector
             elif input.type == "variable":
