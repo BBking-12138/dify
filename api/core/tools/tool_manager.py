@@ -640,4 +640,16 @@ class ToolManager:
             raise ValueError(f"provider type {provider_type} not found")
 
 
-ToolManager.load_builtin_providers_cache()
+import time
+
+time1 = time.time()
+print("load_builtin_providers_cache")
+import asyncio
+
+
+async def async_preload_builtin_tool_providers():
+    ToolManager.load_builtin_providers_cache()
+
+
+asyncio.get_event_loop().create_task(async_preload_builtin_tool_providers())
+print(f"load_builtin_providers_cache time cost {str(time.time() - time1)} sec")
