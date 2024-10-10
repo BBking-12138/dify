@@ -1,5 +1,5 @@
 import logging
-import uuid
+import os
 from collections.abc import Mapping
 from typing import Any, cast
 
@@ -130,7 +130,6 @@ class AdvancedChatAppRunner(WorkflowBasedAppRunner):
             db.session.commit()
 
             # Create a variable pool.
-            workflow_run_id = str(uuid.uuid4())
             system_inputs = {
                 SystemVariableKey.QUERY: query,
                 SystemVariableKey.FILES: files,
@@ -139,7 +138,7 @@ class AdvancedChatAppRunner(WorkflowBasedAppRunner):
                 SystemVariableKey.DIALOGUE_COUNT: conversation_dialogue_count,
                 SystemVariableKey.APP_ID: app_config.app_id,
                 SystemVariableKey.WORKFLOW_ID: app_config.workflow_id,
-                SystemVariableKey.WORKFLOW_RUN_ID: workflow_run_id,
+                SystemVariableKey.WORKFLOW_RUN_ID: self.application_generate_entity.workflow_run_id,
             }
 
             # init variable pool
