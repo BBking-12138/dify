@@ -1,7 +1,7 @@
 from flask import Flask
 
 from configs import dify_config
-from libs.threading import apply_threading_patch
+from libs.threading import apply_gevent_threading_patch
 from server.blueprints_assembly import BluePrintsAssembly
 from server.config_assembly import ConfigAssembly
 from server.extensions_assembly import ExtensionsAssembly
@@ -35,7 +35,7 @@ celery = app.extensions["celery"]
 
 if __name__ == "__main__":
     if dify_config.DEBUG:
-        apply_threading_patch()
+        apply_gevent_threading_patch()
 
     if dify_config.TESTING:
         print("App is running in TESTING mode")

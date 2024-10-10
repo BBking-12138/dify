@@ -1,4 +1,4 @@
-def apply_threading_patch():
+def apply_gevent_threading_patch():
     """
     Run threading patch by gevent when DEBUG mode enabled
     to make standard library threading compatible.
