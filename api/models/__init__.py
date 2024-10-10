@@ -16,6 +16,7 @@ from .model import (
     UploadFile,
 )
 from .source import DataSourceOauthBinding
+from .tools import ToolFile
 from .workflow import (
     ConversationVariable,
     Workflow,
@@ -50,4 +51,5 @@ __all__ = [
     "Conversation",
     "MessageAnnotation",
     "FileUploadConfig",
+    "ToolFile",
 ]

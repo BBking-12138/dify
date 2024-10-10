@@ -45,11 +45,11 @@ class File(BaseModel):
     filename: Optional[str] = None
     extension: Optional[str] = None
     mime_type: Optional[str] = None
-    size: int = 0
+    size: int = -1
     _extra_config: FileExtraConfig | None = None
 
     def to_dict(self) -> Mapping[str, str | int | None]:
-        data = self.model_dump()
+        data = self.model_dump(mode="json")
         return {
             **data,
             "url": self.generate_url(),

@@ -2,7 +2,7 @@ import json
 from typing import Optional
 
 from sqlalchemy import ForeignKey
-from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import Mapped, mapped_column
 
 from core.tools.entities.common_entities import I18nObject
 from core.tools.entities.tool_bundle import ApiToolBundle
@@ -303,6 +303,8 @@ class ToolFile(db.Model):
     file_key: Mapped[str] = db.Column(db.String(255), nullable=False)
     mimetype: Mapped[str] = db.Column(db.String(255), nullable=False)
     original_url: Mapped[Optional[str]] = db.Column(db.String(2048), nullable=True)
+    name: Mapped[str] = mapped_column(default="")
+    size: Mapped[int] = mapped_column(default=-1)
 
     def __init__(
         self,
@@ -313,6 +315,8 @@ class ToolFile(db.Model):
         file_key: str,
         mimetype: str,
         original_url: Optional[str] = None,
+        name: str,
+        size: int,
     ):
         self.user_id = user_id
         self.tenant_id = tenant_id
@@ -320,3 +324,5 @@ class ToolFile(db.Model):
         self.file_key = file_key
         self.mimetype = mimetype
         self.original_url = original_url
+        self.name = name
+        self.size = size

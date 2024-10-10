@@ -35,8 +35,12 @@ annotation_hit_history_fields = {
 
 message_file_fields = {
     "id": fields.String,
+    "filename": fields.String,
     "type": fields.String,
     "url": fields.String,
+    "mime_type": fields.String,
+    "size": fields.Integer,
+    "transfer_method": fields.String,
     "belongs_to": fields.String(default="user"),
 }
 
