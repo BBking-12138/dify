@@ -3,6 +3,7 @@ from flask import Flask
 from configs import dify_config
 from libs.threading import apply_gevent_threading_patch
 from server.blueprints_assembly import BluePrintsAssembly
+from server.commands_assembly import CommandsAssembly
 from server.config_assembly import ConfigAssembly
 from server.extensions_assembly import ExtensionsAssembly
 from server.logger_assembly import LoggerAssembly
@@ -21,6 +22,7 @@ def create_app() -> Flask:
         SecurityAssembly,
         PreloadModuleAssembly,
         ExtensionsAssembly,
+        CommandsAssembly,
         BluePrintsAssembly,
     ]
     for assem in assemblies:

@@ -5,7 +5,7 @@ import secrets
 from typing import Optional
 
 import click
-from flask import Flask, current_app
+from flask import current_app
 from werkzeug.exceptions import NotFound
 
 from configs import dify_config
@@ -24,26 +24,7 @@ from models.dataset import Dataset, DatasetCollectionBinding, DocumentSegment
 from models.dataset import Document as DatasetDocument
 from models.model import Account, App, AppAnnotationSetting, AppMode, Conversation, MessageAnnotation
 from models.provider import Provider, ProviderModel
-from server.basic_assembly import BasicAssembly
 from services.account_service import RegisterService, TenantService
-
-
-class CommandsAssembly(BasicAssembly):
-    @staticmethod
-    def prepare_app(app: Flask):
-        register_commands(app)
-
-
-def register_commands(app):
-    app.cli.add_command(reset_password)
-    app.cli.add_command(reset_email)
-    app.cli.add_command(reset_encrypt_key_pair)
-    app.cli.add_command(vdb_migrate)
-    app.cli.add_command(convert_to_agent_apps)
-    app.cli.add_command(add_qdrant_doc_id_index)
-    app.cli.add_command(create_tenant)
-    app.cli.add_command(upgrade_db)
-    app.cli.add_command(fix_app_site_missing)
 
 
 @click.command("reset-password", help="Reset the account password.")
@@ -679,3 +660,15 @@ where sites.id is null limit 1000"""
                 break
 
     click.echo(click.style("Fix for missing app-related sites completed successfully!", fg="green"))
+
+
+def register_commands(app):
+    app.cli.add_command(reset_password)
+    app.cli.add_command(reset_email)
+    app.cli.add_command(reset_encrypt_key_pair)
+    app.cli.add_command(vdb_migrate)
+    app.cli.add_command(convert_to_agent_apps)
+    app.cli.add_command(add_qdrant_doc_id_index)
+    app.cli.add_command(create_tenant)
+    app.cli.add_command(upgrade_db)
+    app.cli.add_command(fix_app_site_missing)
