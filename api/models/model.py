@@ -13,9 +13,10 @@ from sqlalchemy import Float, func, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from configs import dify_config
-from core.file import FILE_MODEL_IDENTITY, File, FileTransferMethod, FileType
+from core.file import FILE_MODEL_IDENTITY, File, FileExtraConfig, FileTransferMethod, FileType
 from core.file import helpers as file_helpers
 from core.file.tool_file_parser import ToolFileParser
+from enums import CreatedByRole
 from extensions.ext_database import db
 from libs.helper import generate_string
 
@@ -71,7 +72,7 @@ class App(db.Model):
     __table_args__ = (db.PrimaryKeyConstraint("id", name="app_pkey"), db.Index("app_tenant_id_idx", "tenant_id"))
 
     id = db.Column(StringUUID, server_default=db.text("uuid_generate_v4()"))
-    tenant_id = db.Column(StringUUID, nullable=False)
+    tenant_id: Mapped[str] = db.Column(StringUUID, nullable=False)
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=False, server_default=db.text("''::character varying"))
     mode = db.Column(db.String(255), nullable=False)
@@ -926,49 +927,71 @@ class Message(db.Model):
 
     @property
     def message_files(self):
-        message_files = db.session.query(MessageFile).filter(MessageFile.message_id == self.id).all()
+        from factories import file_factory
 
-        files = []
+        message_files = db.session.query(MessageFile).filter(MessageFile.message_id == self.id).all()
+        current_app = db.session.query(App).filter(App.id == self.app_id).first()
+        if not current_app:
+            raise ValueError(f"App {self.app_id} not found")
+
+        files: list[File] = []
         for message_file in message_files:
-            url = message_file.url
             if message_file.transfer_method == "local_file":
                 if message_file.upload_file_id is None:
-                    # Skip invalid message file
-                    continue
-                if message_file.type == "image":
-                    url = file_helpers.get_signed_image_url(message_file.upload_file_id)
-                else:
-                    url = file_helpers.get_signed_file_url(message_file.upload_file_id)
-            if message_file.transfer_method == "tool_file":
+                    raise ValueError(f"MessageFile {message_file.id} is a local file but has no upload_file_id")
+                file = file_factory.build_from_mapping(
+                    mapping={
+                        "id": message_file.id,
+                        "upload_file_id": message_file.upload_file_id,
+                        "transfer_method": message_file.transfer_method,
+                        "type": message_file.type,
+                    },
+                    tenant_id=current_app.tenant_id,
+                    user_id=self.from_account_id or self.from_end_user_id or "",
+                    role=CreatedByRole(message_file.created_by_role),
+                    config=FileExtraConfig(),
+                )
+            elif message_file.transfer_method == "remote_url":
                 if message_file.url is None:
-                    # Skip invalid message file
-                    continue
-
-                # get tool file id
-                tool_file_id = message_file.url.split("/")[-1]
-                # trim extension
-                tool_file_id = tool_file_id.split(".")[0]
-
-                # get extension
-                if "." in message_file.url:
-                    extension = f'.{message_file.url.split(".")[-1]}'
-                    if len(extension) > 10:
-                        extension = ".bin"
-                else:
-                    extension = ".bin"
-                # add sign url
-                url = ToolFileParser.get_tool_file_manager().sign_file(tool_file_id=tool_file_id, extension=extension)
-
-            files.append(
-                {
+                    raise ValueError(f"MessageFile {message_file.id} is a remote url but has no url")
+                file = file_factory.build_from_mapping(
+                    mapping={
+                        "id": message_file.id,
+                        "type": message_file.type,
+                        "transfer_method": message_file.transfer_method,
+                        "url": message_file.url,
+                    },
+                    tenant_id=current_app.tenant_id,
+                    user_id=self.from_account_id or self.from_end_user_id or "",
+                    role=CreatedByRole(message_file.created_by_role),
+                    config=FileExtraConfig(),
+                )
+            elif message_file.transfer_method == "tool_file":
+                mapping = {
                     "id": message_file.id,
                     "type": message_file.type,
-                    "url": url,
-                    "belongs_to": message_file.belongs_to or "user",
+                    "transfer_method": message_file.transfer_method,
+                    "tool_file_id": message_file.upload_file_id,
                 }
-            )
+                file = file_factory.build_from_mapping(
+                    mapping=mapping,
+                    tenant_id=current_app.tenant_id,
+                    user_id=self.from_account_id or self.from_end_user_id or "",
+                    role=CreatedByRole(message_file.created_by_role),
+                    config=FileExtraConfig(),
+                )
+            else:
+                raise ValueError(
+                    f"MessageFile {message_file.id} has an invalid transfer_method {message_file.transfer_method}"
+                )
+            files.append(file)
 
-        return files
+        result = [
+            {"belongs_to": message_file.belongs_to, **file.to_dict()}
+            for (file, message_file) in zip(files, message_files)
+        ]
+
+        return result
 
     @property
     def workflow_run(self):
@@ -1067,7 +1090,7 @@ class MessageFile(db.Model):
         url: str | None = None,
         belongs_to: Literal["user", "assistant"] | None = None,
         upload_file_id: str | None = None,
-        created_by_role: Literal["account", "end_user"],
+        created_by_role: CreatedByRole,
         created_by: str,
     ):
         self.message_id = message_id

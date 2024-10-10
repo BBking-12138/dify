@@ -8,7 +8,7 @@ from constants import AUDIO_EXTENSIONS, DOCUMENT_EXTENSIONS, IMAGE_EXTENSIONS, V
 from core.file import File, FileBelongsTo, FileExtraConfig, FileTransferMethod, FileType
 from core.helper import ssrf_proxy
 from extensions.ext_database import db
-from models import UploadFile
+from models import ToolFile, UploadFile
 
 if TYPE_CHECKING:
     from enums import CreatedByRole
@@ -73,13 +73,12 @@ def build_from_mapping(
                 transfer_method=transfer_method,
             )
         case FileTransferMethod.TOOL_FILE:
-            file = File(
+            file = _build_from_tool_file(
+                mapping=mapping,
                 tenant_id=tenant_id,
-                type=FileType.value_of(mapping.get("type")),
+                user_id=user_id,
+                config=config,
                 transfer_method=transfer_method,
-                remote_url=None,
-                related_id=mapping.get("tool_file_id"),
-                _extra_config=config,
             )
         case _:
             raise ValueError(f"Invalid file transfer method: {transfer_method}")
@@ -151,6 +150,7 @@ def _build_from_local_file(
     if row is None:
         raise ValueError("Invalid upload file")
     file = File(
+        id=mapping.get("id"),
         filename=row.name,
         extension=row.extension,
         mime_type=row.mime_type,
@@ -177,17 +177,76 @@ def _build_from_remote_url(
         raise ValueError("Invalid file url")
     resp = ssrf_proxy.head(url)
     resp.raise_for_status()
+
+    # Try to extract filename from response headers or URL
+    content_disposition = resp.headers.get("Content-Disposition")
+    if content_disposition:
+        filename = content_disposition.split("filename=")[-1].strip('"')
+    else:
+        filename = url.split("/")[-1].split("?")[0]
+    # If filename is empty, set a default one
+    if not filename:
+        filename = "unknown_file"
+
+    # Determine file extension
+    extension = "." + filename.split(".")[-1] if "." in filename else ".bin"
+
+    # Create the File object
     file_size = int(resp.headers.get("Content-Length", 0))
     mime_type = str(resp.headers.get("Content-Type", ""))
     if not mime_type:
         mime_type, _ = mimetypes.guess_type(url)
     file = File(
+        id=mapping.get("id"),
+        filename=filename,
         tenant_id=tenant_id,
         type=FileType.value_of(mapping.get("type")),
         transfer_method=transfer_method,
         remote_url=url,
         _extra_config=config,
         mime_type=mime_type,
+        extension=extension,
         size=file_size,
+    )
+    return file
+
+
+def _build_from_tool_file(
+    *,
+    mapping: Mapping[str, Any],
+    tenant_id: str,
+    user_id: str,
+    config: FileExtraConfig,
+    transfer_method: FileTransferMethod,
+):
+    tool_file = (
+        db.session.query(ToolFile)
+        .filter(
+            ToolFile.id == mapping.get("tool_file_id"),
+            ToolFile.tenant_id == tenant_id,
+            ToolFile.user_id == user_id,
+        )
+        .first()
+    )
+    if tool_file is None:
+        raise ValueError(f"ToolFile {mapping.get('tool_file_id')} not found")
+
+    path = tool_file.file_key
+    if "." in path:
+        extension = "." + path.split("/")[-1].split(".")[-1]
+    else:
+        extension = ".bin"
+    file = File(
+        id=mapping.get("id"),
+        tenant_id=tenant_id,
+        filename=tool_file.name,
+        type=FileType.value_of(mapping.get("type")),
+        transfer_method=transfer_method,
+        remote_url=tool_file.original_url,
+        related_id=tool_file.id,
+        extension=extension,
+        mime_type=tool_file.mimetype,
+        size=tool_file.size,
+        _extra_config=config,
     )
     return file
