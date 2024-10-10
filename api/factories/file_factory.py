@@ -192,7 +192,7 @@ def _build_from_remote_url(
     extension = "." + filename.split(".")[-1] if "." in filename else ".bin"
 
     # Create the File object
-    file_size = int(resp.headers.get("Content-Length", 0))
+    file_size = int(resp.headers.get("Content-Length", -1))
     mime_type = str(resp.headers.get("Content-Type", ""))
     if not mime_type:
         mime_type, _ = mimetypes.guess_type(url)
