@@ -1,6 +1,5 @@
 from flask import Flask
 
-from configs import dify_config
 from server.basic_assembly import BasicAssembly
 
 
@@ -10,4 +9,6 @@ class SecurityAssembly(BasicAssembly):
 
 
 def prepare_secret_key(app: Flask):
+    from configs import dify_config
+
     app.secret_key = dify_config.SECRET_KEY

@@ -2,7 +2,6 @@ import logging
 import os
 import sys
 import warnings
-from logging.handlers import RotatingFileHandler
 
 from flask import Flask
 
@@ -20,6 +19,8 @@ def prepare_warnings():
 
 
 def prepare_logging(app: Flask):
+    from logging.handlers import RotatingFileHandler
+
     log_handlers = None
     log_file = app.config.get("LOG_FILE")
     if log_file:

@@ -2,7 +2,6 @@ import os
 
 from flask import Flask
 
-from configs import dify_config
 from server.basic_assembly import BasicAssembly
 
 
@@ -12,6 +11,8 @@ class ConfigAssembly(BasicAssembly):
 
 
 def prepare_flask_configs(app: Flask):
+    from configs import dify_config
+
     app.config.from_mapping(dify_config.model_dump())
 
     # populate configs into system environment variables
