@@ -1,0 +1,24 @@
+identity:
+  author: Dify
+  name: baidu
+  label:
+    en_US: baidu
+    zh_Hans: baidu
+  description:
+    en_US: baidu
+    zh_Hans: baidu
+  icon: icon.svg
+credentials_for_provider: # 凭据字段
+  serpapi_api_key: # 凭据字段名称
+    type: secret-input # 凭据字段类型
+    required: true # 是否必填
+    label: # 凭据字段标签
+      en_US: SerpApi API key # 英文标签
+      zh_Hans: SerpApi API key # 中文标签
+    placeholder: # 凭据字段占位符
+      en_US: Please input your SerpApi API key # 英文占位符
+      zh_Hans: 请输入你的 SerpApi API key # 中文占位符
+    help: # 凭据字段帮助文本
+      en_US: Get your SerpApi API key from SerpApi # 英文帮助文本
+      zh_Hans: 从 SerpApi 获取您的 SerpApi API key # 中文帮助文本
+    url: https://serpapi.com/manage-api-key # 凭据字段帮助链接
