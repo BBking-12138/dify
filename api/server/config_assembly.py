@@ -3,6 +3,12 @@ import os
 from flask import Flask
 
 from configs import dify_config
+from server.basic_assembly import BasicAssembly
+
+
+class ConfigAssembly(BasicAssembly):
+    def prepare_app(self, app: Flask):
+        prepare_flask_configs(app)
 
 
 def prepare_flask_configs(app: Flask):

@@ -1,6 +1,13 @@
 from flask import Flask
 from flask_cors import CORS
 
+from server.basic_assembly import BasicAssembly
+
+
+class BluePrintsAssembly(BasicAssembly):
+    def prepare_app(self, app: Flask):
+        register_blueprints(app)
+
 
 # register blueprint routers
 def register_blueprints(app: Flask):

@@ -6,10 +6,16 @@ from logging.handlers import RotatingFileHandler
 
 from flask import Flask
 
-from events import event_handlers  # noqa: F401
+from server.basic_assembly import BasicAssembly
 
 
-def prepare_warnings(app: Flask):
+class LoggerAssembly(BasicAssembly):
+    def prepare_app(self, app: Flask):
+        prepare_warnings()
+        prepare_logging(app)
+
+
+def prepare_warnings():
     warnings.simplefilter("ignore", ResourceWarning)
 
 

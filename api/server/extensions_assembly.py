@@ -1,24 +1,31 @@
 from flask import Flask
 
-from extensions import (
-    ext_app_metrics,
-    ext_celery,
-    ext_code_based_extension,
-    ext_compress,
-    ext_database,
-    ext_hosting_provider,
-    ext_login,
-    ext_mail,
-    ext_migrate,
-    ext_proxy_fix,
-    ext_redis,
-    ext_sentry,
-    ext_storage,
-)
-from extensions.ext_database import db
+from server.basic_assembly import BasicAssembly
+
+
+class ExtensionsAssembly(BasicAssembly):
+    def prepare_app(self, app: Flask):
+        initialize_extensions(app)
 
 
 def initialize_extensions(app: Flask):
+    from extensions import (
+        ext_app_metrics,
+        ext_celery,
+        ext_code_based_extension,
+        ext_compress,
+        ext_database,
+        ext_hosting_provider,
+        ext_login,
+        ext_mail,
+        ext_migrate,
+        ext_proxy_fix,
+        ext_redis,
+        ext_sentry,
+        ext_storage,
+    )
+    from extensions.ext_database import db
+
     # Since the application instance is now created, pass it to each Flask
     # extension instance to bind it to the Flask application instance (app)
     ext_compress.init_app(app)
