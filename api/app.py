@@ -1,9 +1,7 @@
 from flask import Flask
 
 from configs import dify_config
-from events import event_handlers  # noqa: F401
 from libs.threading import apply_threading_patch
-from models import account, dataset, model, source, task, tool, tools, web  # noqa: F401
 from server.blueprints_assembly import BluePrintsAssembly
 from server.config_assembly import ConfigAssembly
 from server.extensions_assembly import ExtensionsAssembly
