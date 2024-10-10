@@ -1,6 +1,6 @@
 def apply_gevent_threading_patch():
     """
-    Run threading patch by gevent when DEBUG mode enabled
+    Run threading patch by gevent
     to make standard library threading compatible.
     Patching should be done as early as possible in the lifecycle of the program.
     :return:
